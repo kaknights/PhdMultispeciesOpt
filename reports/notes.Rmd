@@ -1,0 +1,110 @@
+---
+title: "Appendix (probably)"
+output: 
+  pdf_document:
+    df_print: kable
+  
+---
+```{r include=FALSE}
+#set global options for code chunks
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+#required packages
+#tinytex::install_tinytex()
+library(Distance)
+library(tinytex)
+
+#load custom functions
+source("../scripts/optCalcFunctions.R")
+
+```
+
+# Appendix to Chapter 2 or 3: Optimising line-transect distance sampling surveys of multiple species 
+
+```{r echo=FALSE}
+
+#load raw data
+data <- read.csv("../dataRaw/distance_Kath_2018_DataDecky.csv", 
+                 stringsAsFactors = FALSE, header = TRUE)
+```
+
+This document gives details of the data used to explore the multispecies application of line-transect distance sampling optimisation.  Data was collected at four sites in (YEAR) to investigate invasion properties of plants from Botanical Gardens into the surrounding native forest.  Protocols followed can be found in Junaedi (2018).  Sample sizes for each species at each site are given in the table below.
+
+```{r echo=FALSE}
+
+#make df of sample sizes (#records per species per site)
+sampSizes <- aggregate(data$distance, by = list(data$Location,data$Species), 
+          FUN = length)
+names(sampSizes) <- c("Location", "Species", "nDetections")
+sampSizes <- sampSizes[order(sampSizes$Location),]
+sampSizes
+
+```
+Number of species per site are summarised below.
+```{r echo=FALSE}
+#make df of n species per site
+spPerSite <- aggregate(sampSizes$Species, by = list(sampSizes$Location), FUN = length)
+names(spPerSite) <- c("Location", "nSpecies")
+spPerSite
+```
+
+These data can be used to calculate encounter rates and other parameters needed to investigate applications of the optimal proportion to measure. 
+Other parameters to summarise and display: strip width (same for all species?), detectability (if model can be fitted, what model and parameters?), densities (how different?)
+
+Few species have sufficient sample sizes for density estimates.  For other species... bootstrap?  Idea is to get density and encounter rates, work out the extra effort needed to collect sufficient data for the rare species under LTS, then get the optimal proportions from the new equation
+
+```{r echo=FALSE}
+#which samples have >80 records
+
+sampSizes80 <- sampSizes[sampSizes$nDetections>=80, ]
+sampSizes80
+#narrow down which samples to use: CBG has 3 species with sufficient records for ds
+
+#what to do though?
+```
+Explore the data to find some 'model' species to use as species A and B: example 1: species A will be common, species B will be rare
+example 2: species A is a group of more common species, species B is a group of more rare species
+```{r}
+#-----------------------------------------------------------------------------
+#running example scenario to test preliminary multispecies opt calculations
+
+Da <- 0.5; Db <- 0.1 #make into a matrix? or dataframe?
+#if detectabilities are the same, sigm should be the same (keep it simple)
+sigm <- 10 #if detectabilities are the same, otherwise use sigmA and B below
+sigmA <- 10
+sigmB <- 10
+w <- 25 #so the sample strip is 50m wide
+mu <- sqrt(pi*(sigm^2)/2) #if detectabilities are the same
+muA <- sqrt(pi*(sigmA^2)/2)
+muB <- sqrt(pi*(sigmB^2)/2)
+Ea <- 2*mu*Da
+Eb <- 2*mu*Db
+#costs - Cl is length related, Cm we consider the same for both species
+Cm <- 0.5
+Cl <- 0.05
+
+#exact (I think) recreation of the expression from mathematica
+#not super sure if the Da outside the radical is a multiplier or root
+alphaA <- (Da*sqrt((Cl*Eb)/((Cm*Db^2*Ea^2)+(Cm*Da^2*Ea*Eb))))/sqrt(2)
+
+#collective intermediate version
+alphaAmod <- sqrt((Cl/Cm)*((Eb/Ea)/((Db^2/Da^2)*Ea + Eb)))/sqrt(2)
+#my attempt at modification
+alphaAmodme <- sqrt((Cl/Cm)*((Eb/Ea)/((Db^2*Ea/Da^2) + Eb)))/sqrt(2)
+
+####
+# Currently (25.02.2021) all give same answer!!!!
+
+# if encounter rates are the same (numerator
+# in second term inside radial simplifies to 1)
+alphaAsimp <- sqrt((Cl/Cm)*(1/((2*mu*Db)+(2*mu*Da))))/sqrt(2)
+
+# check answer against single species solution: 
+CwCombined <- Cl/(Ea+Eb)
+optA <- sqrt(CwCombined/(2*Cm))
+
+# Exchanging E for 2muD
+alphA <- sqrt(Cl/Cm*((2*muB)/(2*muA)/((2*muA*Db)+(2*muB*Da))))/sqrt(2)
+```
+
+
