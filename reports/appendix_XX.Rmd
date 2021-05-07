@@ -1,0 +1,188 @@
+---
+title: "Multispecies optimisation: derivation and verification"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document:
+    df_print: kable
+    fig_caption: true
+    latex_engine: xelatex
+mainfont: Calibri 
+fontsize: 11pt
+header-includes:
+   - \usepackage{setspace}
+   - \doublespacing  
+---
+```{r include=FALSE}
+#set global options for code chunks
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+#required packages
+#tinytex::install_tinytex()
+#tinytex::reinstall_tinytex()
+library(tinytex)
+source("../scripts/optCalcFunctions.R") 
+
+```
+# Introduction
+
+In a multispecies survey of species density and abundance, there may be a range of population densities and detectabilities among the target species.  If conventional distance sampling is applied, the maximum feasible length of transect for a given budget will be limited primarily by the abundances of the common species, with time absorbed by measuring those frequent detections.  The limit on transect length prevents the collection of an optimum sample size for the rarer species - for the common species the distance measurements needed for distance sampling will be relatively easy to collect, whereas for the rare species it will be the primary focus of survey effort. The rarer species may be of greater interest or importance due to its rarity.  The optimisation proposed in chapter 1 offers a potential mechanism to set the length of transect according to the expected number of detections of the rarer species, which the budget can allow if distances are measured to only a proportion of detections of the more common species.  
+
+When setting the proportion to measure for common species, it may be possible to vary $\alpha$ - the proportion of detected targets to which distances are measured - without sacrificing reliability or precision in the estimates for the common species.  Appendix X of chapter 1 shows a variety of shapes for the cv of the density estimate as a function of alpha.  
+
+# Methods
+
+The variance of the estimator of density is approximated by the delta method, for a single species this is $$var(\hat{D}) = \hat{D}^{2}\left[\frac{1}{n}\left(1+\frac{1}{2\alpha}\right)\right].$$ Define the terms here.  In chapter 1 we use the equivalence $n=EL$ as a way to substitute the cost function into this equation to derive the optimal proportion of targets to measure.  Here we seek to do the same, but with the cost function expressed for surveys of multiple species, and an objective function to optimise comprised of some function of the variances of all species.  We seek to derive the optimal proportion to measure of each species, such that the objective function is minimised for a given budget.
+
+## Survey budget as a function of costs, transect length and encounter rate
+
+From chapter 1 we have that, for a survey of a single species, $$B = LE(C_{w} + \alpha C_{m}),$$ where $B =$ total survey budget, $L =$ total transect length, $E = $ encounter rate, $C_{w}=$ cost of walking per detection, $C_{m}=$ cost of measuring per detection, $\alpha =$ proportion measured of detected targets. 
+
+For a simultaneous survey of multiple species, $C_{w}$ is a shared cost, and we assume $C_{m}$ is the same for both species (assuming no difference in method **(or mean detection distance?)** between species).  We begin with a survey of two species, species A and species B, as this is the simplest context for a multiple species survey. The total cost of walking for species A and B is $$LC_{w}(E_{A}+E_{B}),$$ and the total cost of measuring is $$L(E_{A} \alpha _{A}C_{m} + E_{B} \alpha _{B}C_{m}),$$ where encounter rate and proportion measured are expressed separately for each species.  To keep cost of walking independent of the number of species, we must restate the cost of walking as $C_{L}=$ cost of walking per unit length of transect.  If {A, B,..., S} is the set of species in the survey, we can re-express the cost function for $S$ species in terms of $L$, $$L = \frac{B}{C_{L} + \sum_{i=A}^S E_{i} \alpha _{i}C_{m}}.$$  As $1/n$ in equation X above is equal to $1/EL$, we can substitute our cost function in terms of $L$ into the variance equation, but we must first define the objective function to be optimised in the multispecies context.  
+
+## Objective function as the sum of variances
+
+We consider the objective function as the sum of the variances on the density estimates for each species:$$var(\hat{D}_{A})+var(\hat{D}_{B})= \hat{D}_{A}^{2} \left(\frac{1}{LE_{A}}+ \frac{1}{2E_{A}\alpha_{A}}\right)+\hat{D}_{B}^{2} \left(\frac{1}{LE_{B}}+ \frac{1}{2E_{B}\alpha_{B}}\right).$$  **Why the sum? Because the product was super complex.**  
+To find the optimal values of $\alpha_{A}$ and $\alpha_{B}$ - where the overall variance is minimised - we differentiate and solve for $0$ the two partial derivatives with respect to $\alpha_{A}$ and $\alpha_{B}$.  The resulting simultaneous equations are solved for $\alpha_{A}$ and $\alpha_{B}$.  If all variables are $>0$, we have $$\alpha_{A} = \frac{D_{A}\sqrt{\frac{C_{L}E_{B}}{C_{m}D_{B}^{2}E_{A}^{2}+C_{m}D_{A}^{2}E_{A}E_{B}}}}{\sqrt{2}}$$ and $$\alpha_{B} = \frac{D_{B}\sqrt{\frac{C_{L}E_{A}}{C_{m}D_{A}^{2}E_{B}^{2}+C_{m}D_{B}^{2}E_{A}E_{B}}}}{\sqrt{2}}.$$  Distance sampling theory says that the encounter rate $E$ is equal to $2\mu D$ (where $\mu$ is the 'effective strip half-width', or the distance at which the survey area would yield the same $n$ under perfect detection as the survey with strip half-width $w$ yields $n$ with some detection function). With this we can rearrange and simplify the above equations for the distance sampling context:$$\alpha_{A} = \frac{\sqrt{\frac{C_{L}}{C_{m}}\frac{\mu_{B}/\mu_{A}}{\mu_{A}D_{B}+\mu_{B}D_{A}}}}{2}$$ and $$\alpha_{B} = \frac{\sqrt{\frac{C_{L}}{C_{m}}\frac{\mu_{A}/\mu_{B}}{\mu_{B}D_{A}+\mu_{A}D_{B}}}}{2}.$$ If we consider the case where species A and species B have the same density and detectability, these expressions simplify to our expression for the $\alpha*$ from Chapter 1.
+
+
+# Results
+
+ + Preliminary graphs showing how the optimal alpha for species A and B varies with either; a change in density of species A, or a change in the effective strip width of species A (all other parameters are kept constant).
+ 
+
+```{r}
+
+#Visualising the driver of the optimal approach: at what point (abundance?)
+# for species B do you measure everything?
+
+# cost per unit length of transect (Cl) between 1 second and 10 seconds per m
+# cost to measure distance to 1 target between 15 seconds and 1 minute
+
+ratClCm <- expand.grid("Cl" = seq(1/60, 10/60, by = 3/60),
+                       "Cm" = seq(0.25, 1, by = 0.25))
+ratClCm$costMult <- ratClCm$Cl/ratClCm$Cm
+
+popPars <- expand.grid("D" = seq(0.005, 0.5, by = 0.05),
+                       "sigm" = seq(2, 20, by = 2))
+popPars$mu <- sqrt(pi*(popPars$sigm^2)/2)
+
+midMinMax <- expand.grid("costMult" = median(ratClCm$costMult),
+                         "D" = c(min(popPars$D), median(popPars$D), max(popPars$D)),
+                         "mu" = c(min(popPars$mu), median(popPars$mu), max(popPars$mu)))
+
+#plot 1-4: species B is low density, mid detectability
+Da <- seq(0.005, 0.5, by = 0.005)
+Da1 <- 0.355
+muA <- seq(0.25, 25, by = 0.25)
+muA1 <- 25.066283
+Db1 <- 0.005
+muB1 <- 12.533141
+
+plotY1 <- altoptAoptB(midMinMax$costMult[2], muA = muA, muB = muB1, Da = Da1, Db = Db1)
+plotY2 <- altoptAoptB(midMinMax$costMult[2], muA = muA1, muB = muB1, Da = Da, Db = Db1)
+
+```
+
+
+```{r, fig.cap= "Optimal alpha over a range of values for mu of species A"}
+
+ par(mfrow = c(1,2), mar = c(5,4,2,2), oma = c(0,0,2,0), pty = "s")
+ plot(x = muA, y = plotY1$alphA, xlim = c(0, max(muA)), ylim = c(0, 1), lty = 1, 
+      ylab = "opt alpha A", type = "l", lwd = 2, cex.axis = 0.8)
+ plot(x = muA, y = plotY1$alphB, xlim = c(0, max(muA)), ylim = c(0, 1), type = "l", 
+      ylab = "opt alpha B", lwd = 2, cex.axis = 0.8)
+ mtext(paste0("Da = ", Da1, "; Db = ", Db1, "; muB = ", muB1), outer = TRUE, side = 3, line = 0)
+
+```
+
+
+```{r, fig.cap="Optimal alpha over a range of values for density of species A"}
+
+par(mfrow = c(1,2), mar = c(5,4,2,2), oma = c(0,0,2,0), pty = "s")
+plot(x = Da, y = plotY2$alphA, xlim = c(0, max(Da)), ylim = c(0, 1), type = "l", 
+     ylab = "opt alpha A", lwd = 2, cex.axis = 0.8)
+plot(x = Da, y = plotY2$alphB, xlim = c(0, max(Da)), ylim = c(0, 1), type = "l", 
+     ylab = "opt alpha B", lwd = 2, cex.axis = 0.8)
+mtext(paste0("muA = ", muA1, "; Db = ", Db1, "; muB = ", muB1), outer = TRUE, side = 3, line = 0)
+```
+
+#thinking about the 3 or 4 different lines: characteristics of species A and B
+
+#species A higher density and detectability (no need to do the reverse?) - 2
+#species A and B are similar - 3
+#species A is similar density but more detectable, and/or vice versa - 4
+  #no: this is covered by the previous graphs
+#the ratio muB/muA (can look at the above scenarios to see how much it explains)
+
+
+```{r, fig.cap="Varying mu of species A over three scenarios"}
+D_vect <- seq(0.005, 0.5, by = 0.005)
+mu_vect <- seq(0.25, 25, by = 0.25)
+
+# 2: species A higher density and detectability (max vs mid, A vs B)
+Da2 <- max(D_vect)
+muA2 <- max(mu_vect)
+Db2 <- median(D_vect)
+muB2 <- median(mu_vect)
+plotY2_mu <- altoptAoptB(median(ratClCm$costMult), muA = mu_vect, muB = muB2, Da = Da2, Db = Db2)
+plotY2_D <- altoptAoptB(median(ratClCm$costMult), muA = muA2, muB = muB2, Da = D_vect, Db = Db2)
+
+# 3: species A and B are similar (but not identical)
+Da3 <- median(D_vect)-0.05
+muA3 <- median(mu_vect)-0.5
+Db3 <- median(D_vect)+0.05
+muB3 <- median(mu_vect)+0.5
+plotY3_mu <- altoptAoptB(median(ratClCm$costMult), muA = mu_vect, muB = muB3, Da = Da3, Db = Db3)
+plotY3_D <- altoptAoptB(median(ratClCm$costMult), muA = muA3, muB = muB3, Da = D_vect, Db = Db3)
+
+#4: species A higher (D and mu) but less difference than min/max
+Da4 <- min(D_vect)+0.15
+muA4 <- min(mu_vect)+5
+Db4 <- max(D_vect)-0.15
+muB4 <- max(mu_vect)-5
+plotY4_mu <- altoptAoptB(median(ratClCm$costMult), muA = mu_vect, muB = muB4, Da = Da4, Db = Db4)
+plotY4_D <- altoptAoptB(median(ratClCm$costMult), muA = muA4, muB = muB4, Da = D_vect, Db = Db4)
+
+speciesPars <- data.frame("muA" = c(muA2, muA3, muA4), "Da" = c(Da2, Da3, Da4), 
+                       "muB" = c(muB2, muB3, muB4), "Db" = c(Db2, Db3, Db4), 
+                       row.names = c("solid", "dashed", "dotted"))
+
+#write.table(speciesPars, "../graphs/MultiSpMultiLinePars.txt")
+knitr::kable(speciesPars, caption = "Species A and B parameters")
+
+alphABplots <- function(vect, Y1, Y2, Y3, vectname){
+  par(mfrow = c(1,2), mar = c(5,4,2,2), oma = c(0,0,2,0), pty = "s")
+  
+  plot(x = vect, y = Y1[,1], ylim = c(0,1), xlim = c(0,max(vect)),
+       ylab = "opt alpha A", xlab = vectname,  
+       type = "l", lwd = 2, cex.axis = 0.8)
+  lines(x = vect, y = Y2[,1], lty = 2, lwd = 2)
+  lines(x = vect, y = Y3[,1], lty = 3, lwd = 2)
+  legend(legend = c("high A mid B", "A and B similar", "low A high B but closer"),
+         lty= c(1,2,3), x = "top", cex = 0.7)
+  
+  plot(x = vect, y = Y1[,2], ylim = c(0,1), xlim = c(0,max(vect)),
+       ylab = "opt alpha B", xlab = vectname,  
+       type = "l", lwd = 2, cex.axis = 0.8)
+  lines(x = vect, y = Y2[,2], lty = 2, lwd = 2)
+  lines(x = vect, y = Y3[,2], lty = 3, lwd = 2)
+  legend(legend = c("high A mid B", "A and B similar", "low A high B but closer"),
+         lty= c(1,2,3), x = "top", cex = 0.7)
+  
+}
+
+#plots 1 and 2
+#png("graphs/MultiSpMultiLineMu.png", width = 1000, height = 500)
+alphABplots(vect = mu_vect, Y1 = plotY2_mu, Y2 = plotY3_mu, Y3 = plotY4_mu, vectname = "muA")
+#dev.off()
+
+```
+
+
+```{r, fig.cap="Varying density of species A over three scenarios"}
+#png("graphs/MultiSpMultiLineD.png", width = 1000, height = 500)
+alphABplots(vect = D_vect, Y1 = plotY2_D, Y2 = plotY3_D, Y3 = plotY4_D, vectname = "Da")
+#dev.off()
+```
+
+Want to plot the objective function: plot varDA + varDB (x) against alpha A, keeping alpha B constant, and vice versa.

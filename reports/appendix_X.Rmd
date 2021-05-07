@@ -1,0 +1,123 @@
+---
+title: "Appendix (probably)"
+output: 
+  pdf_document:
+    df_print: kable
+  
+---
+```{r include=FALSE}
+#set global options for code chunks
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+#required packages
+#tinytex::install_tinytex()
+library(Distance)
+library(tinytex)
+
+#load custom functions
+source("../scripts/optCalcFunctions.R")
+
+```
+
+# Appendix to Chapter 2 or 3: Optimising line-transect distance sampling surveys of multiple species 
+
+```{r echo=FALSE}
+
+#load raw data
+data <- read.csv("../dataRaw/distance_Kath_2018_DataDecky.csv", 
+                 stringsAsFactors = FALSE, header = TRUE)
+```
+
+This document gives details of the data used to explore the multispecies application of line-transect distance sampling optimisation.  Data was collected at four sites in (YEAR) to investigate invasion properties of plants from Botanical Gardens into the surrounding native forest.  Protocols followed can be found in Junaedi (2018).  Sample sizes for each species at each site are given in the table below.
+
+```{r echo=FALSE}
+
+#make df of sample sizes (#records per species per site)
+sampSizes <- aggregate(data$distance, by = list(data$Location,data$Species), 
+          FUN = length)
+names(sampSizes) <- c("Location", "Species", "nDetections")
+sampSizes <- sampSizes[order(sampSizes$Location),]
+sampSizes
+
+```
+Number of species per site are summarised below.
+```{r echo=FALSE}
+#make df of n species per site
+spPerSite <- aggregate(sampSizes$Species, by = list(sampSizes$Location), FUN = length)
+names(spPerSite) <- c("Location", "nSpecies")
+spPerSite
+```
+
+These data can be used to calculate encounter rates and other parameters needed to investigate applications of the optimal proportion to measure. 
+Other parameters to summarise and display: strip width, detectability (if model can be fitted, what model and parameters?), densities (how different?)
+
+Few species have sufficient sample sizes for density estimates.  For other species... bootstrap?  Idea is to get density and encounter rates, work out the extra effort needed to collect sufficient data for the rare species under LTS, then get the optimal proportions from the new equation
+
+```{r echo=FALSE}
+#which samples have >80 records
+
+sampSizes80 <- sampSizes[sampSizes$nDetections>=80, ]
+sampSizes80
+#narrow down which samples to use: CBG has 3 species with sufficient records for ds
+
+#what to do though?
+```
+
+example 1: species A will be common, species B will be rare
+Need to calculate sigma and densities
+example 2: species A is a group of more common species, species B is a group of more rare species
+
+Options in both cases are to use a 'measure everything' class and a single alpha, or an alpha a and an alpha b
+
+Species n detections sample size distributions by site:
+```{r fig.align='left', fig.height=6}
+par(mfrow = c(2,2), mar = c(3, 10, 3, 2))
+
+for(i in 1:4){
+  barplot(sampSizes$nDetections[sampSizes$Location == spPerSite$Location[i]]~ 
+       sampSizes$Species[sampSizes$Location == spPerSite$Location[i]], 
+       main = spPerSite$Location[i],
+       ylab = "", xlab = "n detections", horiz = TRUE,
+       las = 2, xlim = c(0, 300), cex.names = 0.8)
+  abline(v = 80, col = "red", lwd = 2)
+}
+```
+Probably going to use CBG; best distribution of sample sizes.
+
+Species profiles for CBG:
+
+## Explore the data to find some 'model' species to use as species A and B
+```{r fig.height=6}
+par(mfrow = c(3, 2))
+
+sampSizesCBG <- sampSizes[sampSizes$Location == "CBG", ]
+
+for (j in 1:nrow(sampSizesCBG)){
+  hist(data$distance[data$Location=="CBG" & data$Species== sampSizesCBG$Species[j]], 
+       main = paste0("Obs. of ", sampSizesCBG$Species[j]), xlab = "distance (m)")
+}
+#having trouble with the pdf: it's printing the first two subsets on the same page and most of the figure is off the page
+```
+```{r}
+#calculate encounter rates:
+#need transect lengths (same for all species? Check Decky thesis)
+
+w <- 10 #same for all surveys
+
+tCBG <- 1350
+ntCBG <- 3
+tBBG <- 900
+ntBBG <- 4
+tBRBG <- 450
+ntBRBG <- 4
+tKBG <- 650
+ntKBG <- 4
+
+
+```
+
+
+```{r}
+
+```
+
