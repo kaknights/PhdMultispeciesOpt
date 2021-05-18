@@ -1,5 +1,5 @@
 ---
-title: "Multispecies optimisation: derivation and verification"
+title: "Multispecies optimisation: methods"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   pdf_document:
@@ -23,26 +23,7 @@ library(tinytex)
 source("../scripts/optCalcFunctions.R") 
 
 ```
-# Introduction
 
-In a multispecies survey of species density and abundance, there may be a range of population densities and detectabilities among the target species.  If conventional distance sampling is applied, the maximum feasible length of transect for a given budget will be limited primarily by the abundances of the common species, with time absorbed by measuring those frequent detections.  The limit on transect length prevents the collection of an optimum sample size for the rarer species - for the common species the distance measurements needed for distance sampling will be relatively easy to collect, whereas for the rare species it will be the primary focus of survey effort. The rarer species may be of greater interest or importance due to its rarity.  The optimisation proposed in chapter 1 offers a potential mechanism to set the length of transect according to the expected number of detections of the rarer species, which the budget can allow if distances are measured to only a proportion of detections of the more common species.  
-
-When setting the proportion to measure for common species, it may be possible to vary $\alpha$ - the proportion of detected targets to which distances are measured - without sacrificing reliability or precision in the estimates for the common species.  Appendix X of chapter 1 shows a variety of shapes for the cv of the density estimate as a function of alpha.  
-
-# Methods
-
-The variance of the estimator of density is approximated by the delta method, for a single species this is $$var(\hat{D}) = \hat{D}^{2}\left[\frac{1}{n}\left(1+\frac{1}{2\alpha}\right)\right].$$ Define the terms here.  In chapter 1 we use the equivalence $n=EL$ as a way to substitute the cost function into this equation to derive the optimal proportion of targets to measure.  Here we seek to do the same, but with the cost function expressed for surveys of multiple species, and an objective function to optimise comprised of some function of the variances of all species.  We seek to derive the optimal proportion to measure of each species, such that the objective function is minimised for a given budget.
-
-## Survey budget as a function of costs, transect length and encounter rate
-
-From chapter 1 we have that, for a survey of a single species, $$B = LE(C_{w} + \alpha C_{m}),$$ where $B =$ total survey budget, $L =$ total transect length, $E = $ encounter rate, $C_{w}=$ cost of walking per detection, $C_{m}=$ cost of measuring per detection, $\alpha =$ proportion measured of detected targets. 
-
-For a simultaneous survey of multiple species, $C_{w}$ is a shared cost, and we assume $C_{m}$ is the same for both species (assuming no difference in method **(or mean detection distance?)** between species).  We begin with a survey of two species, species A and species B, as this is the simplest context for a multiple species survey. The total cost of walking for species A and B is $$LC_{w}(E_{A}+E_{B}),$$ and the total cost of measuring is $$L(E_{A} \alpha _{A}C_{m} + E_{B} \alpha _{B}C_{m}),$$ where encounter rate and proportion measured are expressed separately for each species.  To keep cost of walking independent of the number of species, we must restate the cost of walking as $C_{L}=$ cost of walking per unit length of transect.  If {A, B,..., S} is the set of species in the survey, we can re-express the cost function for $S$ species in terms of $L$, $$L = \frac{B}{C_{L} + \sum_{i=A}^S E_{i} \alpha _{i}C_{m}}.$$  As $1/n$ in equation X above is equal to $1/EL$, we can substitute our cost function in terms of $L$ into the variance equation, but we must first define the objective function to be optimised in the multispecies context.  
-
-## Objective function as the sum of variances
-
-We consider the objective function as the sum of the variances on the density estimates for each species:$$var(\hat{D}_{A})+var(\hat{D}_{B})= \hat{D}_{A}^{2} \left(\frac{1}{LE_{A}}+ \frac{1}{2E_{A}\alpha_{A}}\right)+\hat{D}_{B}^{2} \left(\frac{1}{LE_{B}}+ \frac{1}{2E_{B}\alpha_{B}}\right).$$  **Why the sum? Because the product was super complex.**  
-To find the optimal values of $\alpha_{A}$ and $\alpha_{B}$ - where the overall variance is minimised - we differentiate and solve for $0$ the two partial derivatives with respect to $\alpha_{A}$ and $\alpha_{B}$.  The resulting simultaneous equations are solved for $\alpha_{A}$ and $\alpha_{B}$.  If all variables are $>0$, we have $$\alpha_{A} = \frac{D_{A}\sqrt{\frac{C_{L}E_{B}}{C_{m}D_{B}^{2}E_{A}^{2}+C_{m}D_{A}^{2}E_{A}E_{B}}}}{\sqrt{2}}$$ and $$\alpha_{B} = \frac{D_{B}\sqrt{\frac{C_{L}E_{A}}{C_{m}D_{A}^{2}E_{B}^{2}+C_{m}D_{B}^{2}E_{A}E_{B}}}}{\sqrt{2}}.$$  Distance sampling theory says that the encounter rate $E$ is equal to $2\mu D$ (where $\mu$ is the 'effective strip half-width', or the distance at which the survey area would yield the same $n$ under perfect detection as the survey with strip half-width $w$ yields $n$ with some detection function). With this we can rearrange and simplify the above equations for the distance sampling context:$$\alpha_{A} = \frac{\sqrt{\frac{C_{L}}{C_{m}}\frac{\mu_{B}/\mu_{A}}{\mu_{A}D_{B}+\mu_{B}D_{A}}}}{2}$$ and $$\alpha_{B} = \frac{\sqrt{\frac{C_{L}}{C_{m}}\frac{\mu_{A}/\mu_{B}}{\mu_{B}D_{A}+\mu_{A}D_{B}}}}{2}.$$ If we consider the case where species A and species B have the same density and detectability, these expressions simplify to our expression for the $\alpha*$ from Chapter 1.
 
 
 # Results
@@ -60,6 +41,15 @@ To find the optimal values of $\alpha_{A}$ and $\alpha_{B}$ - where the overall 
 
 ratClCm <- expand.grid("Cl" = seq(1/60, 10/60, by = 3/60),
                        "Cm" = seq(0.25, 1, by = 0.25))
+#this isn't good - think through this in a more systematic way...  
+#5 different cost ratios, based on five different circumstances:
+# low cost of walking, moderate cost of measuring (detections in quick succession, but not so frequent that a wide strip is stupid, so measuring could be a decent distance)
+# super low cost of walking (like, detections every few cm), low cost of measuring (this may help to clarify what influence the cost ratio has, and will represent the very high density small strip width scenarios - we could also try to work in some 'aggregation' index to account for detections close to each other taking less time to measure?)
+# high cost of walking, moderate cost of measuring 
+# moderate cost of walking, moderate cost of measuring
+# moderate cost of walking, high cost of measuring
+
+
 ratClCm$costMult <- ratClCm$Cl/ratClCm$Cm
 
 popPars <- expand.grid("D" = seq(0.005, 0.5, by = 0.05),
