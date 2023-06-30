@@ -25,27 +25,114 @@ source("../scripts/optCalcFunctions.R")
 
 ```
 
-The variance of the estimator of density $\hat{D}$ is approximated by the delta method. For a single species, where $n$ is the total number of detected targets and $\alpha$ is the proportion of detected targets to which distances are measured, this is $$var(\hat{D}) = \hat{D}^{2}\left[\frac{1}{n}\left(1+\frac{1}{2\alpha}\right)\right].$$  In chapter 1 we use the equivalence $n=EL$ as a way to substitute the cost function into this equation to derive the optimal proportion of targets to measure under the constraint of a given budget.  Here we seek to do the same with the cost function expressed for surveys of multiple species, and an objective function comprised of the variances of all species.  We seek to derive the optimal proportion to measure of each species, such that the objective function is minimised for a given budget.
+The variance of the estimator of density $\hat{D}$ is approximated by the delta method. For a single species, where $n$ is the total number of detected targets and $\alpha$ is the proportion of detected targets to which distances are measured, this is 
+\begin{equation}
+var(\hat{D}) = \hat{D}^{2}\left[\frac{1}{n}\left(1+\frac{1}{2\alpha}\right)\right] \notag.
+\end{equation}  
+In chapter 1 we use the equivalence $n=EL$ as a way to substitute the cost function into this equation to derive the optimal proportion of targets to measure under the constraint of a given budget.  Here we seek to follow a similar process, with the cost function expressed for surveys of multiple species, and an objective function comprised of the variances of all species.  We seek to derive the optimal proportion to measure of each species, such that the objective function is minimised for a given budget.
 
-**(move to intro?)** We approach the multiple species context with the awareness that a theoretical optimisation may deliver a solution that is not practical to implement in the field.  In particular, we expect more than two optimal proportions to be prohibitively complex in practice **(elaborate on why...)**.  For this reason, we have constructed our analysis around a two-$\alpha$ *model* *(not the right word)*.  We offer strategies to optimise surveys under the following scenarios:
+**(move to intro?)** We approach the multiple species context with the awareness that a theoretical optimisation may deliver a solution that is not practical to implement in the field.  In particular, we expect more than two optimal proportions to be prohibitively complex in practice **(elaborate on why...)**.  For this reason, we have constructed our analysis around a two-$\alpha$ *model* *(not the right word)*, \alpha_{A} and \alpha_{B}.  We offer strategies to optimise surveys under the following scenarios:
 
- * Target species can be considered as either 'common' or 'rare'.  For rare species $\alpha^{*}=1$ (measure distances to all detected targets), and common species are treated as having a single optimal proportion. In this case the key considerations are the point at which a species should be considered rare, where the optimal action is to measure all targets.  *For common species how much information is lost by not fully optimising (vs standard distance sampling? or vs their individual optimal proportions?)*
- * Target species can be considered as either very common or less common; here two optimal proportions, $\alpha^{*}_{A}$ and $\alpha^{*}_{B}$ are appropriate. *There may also be a 'rare' group where all detected targets are measured.*
+ 1. Target species can be grouped as 'common' and 'rare'.  The optimal strategy in this case would be to measure distances to all targets for the rare species ($\alpha_{A}^{*}=1$), whilst applying a single optimal proportion to all common species ($\alpha_{B}^{*}<1$).  
+ 2. Target species can be considered as either common or very common; here two optimal proportions, $\alpha^{*}_{A}<1$ and $\alpha^{*}_{B}<1$ are appropriate. 
+
+A third option where both \alpha_{A} and \alpha_{B} \ge 1 is where the use of conventional line-transect distance sampling is optimal. This paper does not offer a specific strategy in this case, but our analysis shows the threshold for the survey cost (a cost ratio we define later) and relationships between the densities and detectabilities of species A and species B that determine when one of the above strategies is optimal.  *For common species how much information is lost by not fully optimising (vs standard distance sampling? or vs their individual optimal proportions?)*
 
 ## Survey budget as a function of shared costs, transect length and encounter rate
  
-We base our derivation of expressions to find the optimal proportions to measure in these scenarios on a survey of two species, species A and species B, as this is the simplest context for a multiple species survey. From chapter 1 we have that, for a survey of a single species, $$B = LE(C_{w} + \alpha C_{m}),$$ where $B$ is the total survey budget, $L$ is total transect length, $E$ is the encounter rate, $C_{w}$ is the cost of walking per detection and $C_{m}$ is the cost of measuring per detection. For a simultaneous survey of multiple species, moving along the transect searching for targets is a cost shared by all target species.  To keep the cost of walking independent of the number of species, we must restate the cost of walking as $C_{L}=$ cost of walking per unit length of transect (and $C_{L}=E_{i}C_{w}$, where $E_{i}$ is the encounter rate for species $i$).  We assume $C_{m}$ is the same for all species (assuming no difference in method **(or mean detection distance?)** between species). We can re-express the cost function in terms of $L$, $$L = \frac{B}{C_{L} + E_{A} \alpha _{A}C_{m} + E_{B} \alpha _{B}C_{m}}$$ and substitute this into the variance equation.  First, we must define the objective function to be optimised in the multispecies context.  
+We base our derivation of expressions to find the optimal proportions to measure in these scenarios on a survey of two species, species A and species B, as this is the simplest context for a multiple species survey. From chapter 1 we have that, for a survey of a single species, 
+\begin{equation} B = LE(C_{w} + \alpha C_{m}) \notag, \end{equation} where $B$ is the total survey budget, $L$ is total transect length, $E$ is the encounter rate, $C_{w}$ is the cost of walking per detection and $C_{m}$ is the cost of measuring per detection. For a simultaneous survey of multiple species, moving along the transect searching for targets is a cost shared by all target species.  To keep the cost of walking independent of the number of species, we must restate the cost of walking as $C_{L}=$ cost of walking per unit length of transect (and $C_{L}=E_{i}C_{w}$, where $E_{i}$ is the encounter rate for species $i$).  We assume $C_{m}$ is the same for all species (assuming no difference in method **(or mean detection distance?)** between species). We can re-express the cost function in terms of $L$, \begin{equation} L = \frac{B}{C_{L} + E_{A} \alpha _{A}C_{m} + E_{B} \alpha _{B}C_{m}} \notag \end{equation} and substitute this into the variance equation.  First, we must define the objective function to be optimised in the multispecies context.  
 
 ## Multiple optimal proportions
 
-We consider the objective function as the sum of the variances on the density estimates for each species:$$var(\hat{D}_{A})+var(\hat{D}_{B})= \hat{D}_{A}^{2} \left(\frac{1}{LE_{A}}+ \frac{1}{2E_{A}\alpha_{A}}\right)+\hat{D}_{B}^{2} \left(\frac{1}{LE_{B}}+ \frac{1}{2E_{B}\alpha_{B}}\right).$$  **Why the sum? Because the product was super complex.**  To find the optimal values of $\alpha_{A}$ and $\alpha_{B}$ - where the overall variance is minimised - we differentiate and solve for $0$ the two partial derivatives of equation X with respect to $\alpha_{A}$ and $\alpha_{B}$.  The resulting simultaneous equations are solved for $\alpha_{A}$ and $\alpha_{B}$.  If all variables are $>0$, we have $$\alpha^{*}_{A} = \frac{D_{A}\sqrt{\frac{C_{L}E_{B}}{C_{m}D_{B}^{2}E_{A}^{2}+C_{m}D_{A}^{2}E_{A}E_{B}}}}{\sqrt{2}}$$ and $$\alpha^{*}_{B} = \frac{D_{B}\sqrt{\frac{C_{L}E_{A}}{C_{m}D_{A}^{2}E_{B}^{2}+C_{m}D_{B}^{2}E_{A}E_{B}}}}{\sqrt{2}}.$$  Distance sampling theory says that the encounter rate $E$ is equal to $2\mu D$, where $\mu$ is the 'effective strip half-width', or the distance at which the survey area would yield the same $n$ under perfect detection as the survey with strip half-width $w$ yields with imperfect detection described by the detection function. With this we can rearrange and simplify the above equations for the distance sampling context:$$\alpha_{A} = \frac{\sqrt{\frac{C_{L}}{C_{m}}\frac{\mu_{B}/\mu_{A}}{\mu_{A}D_{B}+\mu_{B}D_{A}}}}{2}$$ and $$\alpha_{B} = \frac{\sqrt{\frac{C_{L}}{C_{m}}\frac{\mu_{A}/\mu_{B}}{\mu_{B}D_{A}+\mu_{A}D_{B}}}}{2}.$$ If we consider the case where species A and species B have the same density and detectability, these expressions simplify to our expression for the $\alpha^{*}$ from Chapter 1.
+We consider the objective function as the sum of the variances on the density estimates for each species: \begin{equation} \label{var}
+var(\hat{D}_{A})+var(\hat{D}_{B})= \hat{D}_{A}^{2} \left(\frac{1}{LE_{A}}+ \frac{1}{2E_{A}\alpha_{A}}\right)+\hat{D}_{B}^{2} \left(\frac{1}{LE_{B}}+ \frac{1}{2E_{B}\alpha_{B}}\right). \end{equation}  **Why the sum? Because the product was super complex.**  To find the optimal values of $\alpha_{A}$ and $\alpha_{B}$ - where the overall variance is minimised - we differentiate and solve for $0$ the two partial derivatives of equation \eqref{var} with respect to $\alpha_{A}$ and $\alpha_{B}$.  The resulting simultaneous equations are solved for $\alpha_{A}$ and $\alpha_{B}$.  If all variables are $>0$, we have \begin{equation} \alpha^{*}_{A} = \frac{D_{A}\sqrt{\frac{C_{L}E_{B}}{C_{m}D_{B}^{2}E_{A}^{2}+C_{m}D_{A}^{2}E_{A}E_{B}}}}{\sqrt{2}} \notag \end{equation} 
+and \begin{equation} \alpha^{*}_{B}=\frac{D_{B}\sqrt{\frac{C_{L}E_{A}}{C_{m}D_{A}^{2}E_{B}^{2}+C_{m}D_{B}^{2}E_{A}E_{B}}}}{\sqrt{2}} \notag. \end{equation} Distance sampling theory says that the encounter rate $E$ is equal to $2\mu D$, where $\mu$ is the 'effective strip half-width', or the distance at which the survey area would yield the same $n$ under perfect detection as the survey with strip half-width $w$ yields with imperfect detection described by the detection function. With this we can rearrange and simplify the above equations for the distance sampling context: 
+\begin{equation} \label{alphaA}  \alpha_{A} =\frac{\sqrt{\frac{C_{L}}{C_{m}}\frac{\mu_{B}/\mu_{A}}{\mu_{A}D_{B}+\mu_{B}D_{A}}}}{2}  \end{equation} and \begin{equation} \label{alphaB} \alpha_{B} = \frac{\sqrt{\frac{C_{L}}{C_{m}}\frac{\mu_{A}/\mu_{B}}{\mu_{B}D_{A}+\mu_{A}D_{B}}}}{2}. \end{equation} If we consider the case where species A and species B have the same density and detectability, these expressions simplify to our expression for the $\alpha^{*}$ from Chapter 1.
 
-Equations X and X give us expressions to find the optimal proportions to measure for species A and species B, where the ratio of costs $C = \frac{C_{L}}{C_{m}}$ **(different to the other ratio of costs)** provides a weighting factor to the expression $\frac{\mu_{B}/\mu_{A}}{\mu_{A}D_{B}+\mu_{B}D_{A}}$.  That is, the ratio of effective strip half-width (opposing species as the numerator) divided by the sum of the densities, where the densities are weighted by the opposing species effective strip half-width.  Conceptually, this expression is unintuitive, and under survey conditions it is not feasible to have pre-existing accurate estimates for all the variables involved in order to calculate the optimal proportions - indeed, it is probably the estimation of density for which the survey is undertaken. Therefore, we seek to provide an expression that requires minimal pre-existing data to calculate the optimal proportions.  
+We are interested in relationships between the characteristics of the survey  - cost ratio $C$ and probability of detection $\hat{p}$ in the survey for the given species, which is proportional to the quantity \mu - and densities of species A and B that drive the optimal proportions of targets to measure.  From equations \eqref{alphaA} and \eqref{alphaB}, we see that the expression inside the radical should be $\ge4$ for $\alpha\ge1$, or $<4$ for $\alpha<1$. We can solve these simultaneous inequalities for the cost ratio, giving a region of values for the cost ratio where these conditions are satisfied. 
 
-For our first survey strategy $\alpha^{*}_{A}=1$ and $\alpha^{*}_{B}<1$, or more precisely, $\alpha_{A}\ge 1$: the maximum proportion of targets to measure is 1, but the direct calculation may give a proportion $>1$. We are interested in relationships between characteristics of species A and species B that drive the optimal proportion for one of the species to 1 or greater.  From equations X and X, we see that the expression inside the radical should be $\ge4$ for $\alpha\ge1$, or $<4$ for $\alpha<1$. We can solve these inequalities for the cost ratio, giving a region of values for the cost ratio where these conditions are satisfied.  Where species A is the rare species and $\alpha_{A}\ge 1$, $\mu_{A}<\mu_{B}$ and $$\frac{4\mu_{A}(\mu_{A}D_{B}+\mu_{B}D_{A})}{\mu_{B}}\le C<\frac{4\mu_{B}(\mu_{B}D_{A}+\mu_{A}D_{B})}{\mu_{A}}.$$ It is also prudent to note when $\alpha^{*}\ge1$ for both species A and species B, i.e. when the optimal strategy is to measure all targets of all species.  When $\mu_{A}\le\mu_{B}$ $$C\ge \frac{4\mu_{B}(\mu_{A}D_{B}+\mu_{B}D_{A})}{\mu_{A}}.$$  When $\mu_{A}>\mu_{B}$ $$C\ge\frac{4\mu_{A}(\mu_{A}D_{B}+\mu_{B}D_{A})}{\mu_{B}}.$$
+For simplicity we consider the case where $\mu_{A}<\mu_{B}$ (in the reverse case the A and B terms in the following expressions are reversed).**clarify less than vs less than/equal to** Where both $\alpha^{*}_{A}$ and $\alpha^{*}_{B}$ are $<1$ and the optimal strategy is to measure only a proportion of targets for both species, \begin{equation} C<\frac{4\mu_{A}(\mu_{A}D_{B}+\mu_{B}D_{A})}{\mu_{B}}. \notag \end{equation} When $\mu_{A}\le\mu_{B}$ and \begin{equation} C\ge \frac{4\mu_{B}(\mu_{A}D_{B}+\mu_{B}D_{A})}{\mu_{A}} \notag\end{equation} both $\alpha^{*}_{A}=1$ and $\alpha^{*}_{B}=1$ and the optimal strategy is to measure distances to all targets of both species (conventional line transect distance sampling). The region between these thresholds is where the optimal strategy is to measure a proportion of one species: Where species A is the rare species and $\alpha^{*}_{A}= 1$ and $\alpha^{*}_{B}<1$, the condition $\mu_{A}<\mu_{B}$ must be satisfied and \begin{equation} \frac{4\mu_{A}(\mu_{A}D_{B}+\mu_{B}D_{A})}{\mu_{B}}\le C<\frac{4\mu_{B}(\mu_{B}D_{A}+\mu_{A}D_{B})}{\mu_{A}}. \notag \end{equation} 
 
-Our alternative strategy, where both optimal proportions are below 1, 
+Equations \eqref{alphaA} and \eqref{alphaB} give us expressions to find the optimal proportions to measure for species A and species B, where the ratio of costs $C = \frac{C_{L}}{C_{m}}$ **(different to the other ratio of costs)** provides a weighting factor to the expression $\frac{\mu_{BorA}/\mu_{AorB}}{\mu_{A}D_{B}+\mu_{B}D_{A}}$.  **clarify notation for this** Conceptually, this expression is unintuitive, and under survey conditions it is not feasible to have pre-existing accurate estimates for all the variables involved in order to calculate the optimal proportions - indeed, it is probably the estimation of density for which the survey is undertaken. Therefore, we seek to provide an expression that requires minimal pre-existing data to calculate the optimal proportions.
 
++ Using the relationship $E=2\mu D$, [one of the inequalities above,  can be rearranged $$2E_{A}\frac{\mu_{A}^{2}}{\mu_{B}^{2}}\frac{E_{B}}{E_{A}}+2E_{A}$$
+
+   
+```{r}
+#draw axes
+#assume A is the rare species and muA is less than muB
+x <- seq(0.05,1, 0.05) # key variable ratio of encounter rates A/B
+y <- seq(0.05,1, 0.05) # key variable ratio of mus A/B
+
+# Cost ratio greater than this means optimal to measure all of both species
+mySurf1 <- function(x,y, eA){
+  eB <- eA/x
+  2*eB*(1/y^2)*x+(2*eB)
+}
+
+mySurf2 <- function(x,y, eA){
+  2*eA*(y^2)*(1/x)+(2*eA)
+}
+
+grid <- expand.grid("x"=x,"y"=y)
+
+eA <- 0.2 
+
+grid$z1 <- mySurf1(grid$x, grid$y, eA)
+grid$z2 <- mySurf2(grid$x, grid$y, eA)
+
+surf1Matrix <- matrix(grid$z1, ncol = 20)
+surf2Matrix <- matrix(grid$z2, ncol = 20)
+
+plotFunc3d <- function(x, y, zMatrix1, zmatrix2, theta = 30, phi = 15, col1 = "magenta", col2 = "cyan", zlim = c(-1, 7)){
+  par()
+  persp(x, y, zMatrix1, 
+      main = "",
+      zlab = "log cost ratio Cl/Cm", 
+      xlab = "EA/EB", 
+      ylab = "muA/muB", 
+      zlim = zlim,
+      theta = theta, phi = phi, shade = 0.5,
+      col = col1, ticktype = "detailed")
+par(new = TRUE)
+persp(x, y, zmatrix2,
+              main = "muA<=muB",
+              zlab = "log cost ratio Cl/Cm",
+              xlab = "EA/EB",
+              ylab = "muA/muB",
+              zlim = zlim,
+              theta = theta, phi = phi,
+              col = col2, shade = 0.5,
+              ticktype = "detailed")
+}
+  
+plotFunc3d(x, y, log(surf2Matrix), log(surf1Matrix), theta = 45)
+plotFunc3d(x, y, log(surf2Matrix), log(surf1Matrix), theta = 90)
+plotFunc3d(x, y, log(surf2Matrix), log(surf1Matrix), theta = 180)
+plotFunc3d(x, y, log(surf2Matrix), log(surf1Matrix), theta = 315)
+
+# legend(x = 0.5, y = 0.5, legend = c("if C is greater or equal, \nalpha = 1 for species A and B", 
+#       "if C is less than, \nalpha < 1 for species A and B"),
+#        pch = 16, col = c("green", "brown"))
+
+# testVect <- rep(seq(10,100, 10), each = 10)
+# testMatrix <- matrix(testVect, nrow = 10)
+# 
+# testX <- seq(0.1, 1, 0.1)
+# testY <- seq(10, 100, 10)
+# 
+# myVect <- expand.grid("x" = testX,"y" =  testY)
+# myVect$newZ <- myVect$x*myVect$y
+# 
+# myMatrix <- matrix(myVect$newZ, ncol = 10)
+# 
+# persp(testX, testY, myMatrix, ticktype = "detailed", theta = 180)
+
+#sqrt of n flowers (size)
+#
+```
+   
 
 ## Case studies 
  
