@@ -8,7 +8,7 @@
 
 # population pars: density, sigma, all others (mu and encounter rate) can be calculated from these.
 
-dA <- 0.01 # individuals per square m
+dA <- 0.005 # individuals per square m
 dB <- 0.1
 sigmA <- 1.5
 sigmB <- 3.5
@@ -47,9 +47,11 @@ test_lowRc <- oneToTwoAlpha_Rc(Erat = Erat, muRat = muRat)
 
 step2 <- EA/test_lowC
 
-#trying rearrangements
+#trying rearrangements for change from one to two opt proportions for when muA>muB
 
-
+test1_muAgreater <- oneToTwoAlpha_Rc_muA(Erat, muRat)
+test2_muAg <- oneToTwoAlpha_Erat_muA(Rc = test1_muAgreater, muRat)
+test3_muAg <- sqrt(oneToTwoAlpha_muRatSq_muA(Rc = test1_muAgreater, Erat = test2_muAg))
 
 ## Testing opt calcs
 

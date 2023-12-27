@@ -23,6 +23,23 @@ optAoptB <- function(Cl, Cm, sigmA, sigmB, Da, Db){
 
 #myTest <- optAoptB(Cl = 0.05, Cm = 0.5, sigmA = 10, sigmB = 8, 
 #Da = 0.5, Db = 0.1)
+altoptAoptB <- function(costMult, muA, muB, Da, Db){
+  
+  alphA <- sqrt(costMult*((muB)/(muA)/((2*muA*Db)+(2*muB*Da))))/sqrt(2)
+  alphB <- sqrt(costMult*((muA)/(muB)/((2*muA*Db)+(2*muB*Da))))/sqrt(2)
+  myOptProps <- data.frame(alphA, alphB)
+  return(myOptProps)
+}
+
+#version 1 of this function:
+# altoptAoptB <- function(costMult, muA, muB, Da, Db){
+#   
+#   alphA <- sqrt(costMult*((muB)/(muA)/((muA*Db)+(muB*Da))))/2
+#   alphB <- sqrt(costMult*((muA)/(muB)/((muA*Db)+(muB*Da))))/2
+#   myOptProps <- data.frame(alphA, alphB)
+#   return(myOptProps)
+# }
+
 
 ######################################################################
 
@@ -31,37 +48,37 @@ optAoptB <- function(Cl, Cm, sigmA, sigmB, Da, Db){
 
 ######################################################################
 
-#dsOptCalcR takes R, sigm, Cm, Cw and Budget as arguments and returns 
+#dsOptCalcE takes E, sigm, Cm, Cw and Budget as arguments and returns 
 # a dataframe containing all the survey characteristics and optimisation calculations
-# R = encounter rate (n detections per meters)
+# E = encounter rate (n detections per meters)
 # sigm = sigma, scale parameter of the detection function
 # Cm = cost of measuring one detected target (in minutes)
 # Cw = cost of walking to next detection (in minutes)
 # Budget = survey time (total walking plus total measuring) in minutes
-dsOptACalcR <- function(R, sigm, Cm, Cw, Budget){
+dsOptACalcE <- function(E, sigm, Cm, Cw, Budget){
   w <- 2*sigm
   mu <- sqrt(pi*(sigm^2)/2)
-  D <- R/(2*mu)
-  C1 <- R*Cw
-  Opt_Alpha <-  ifelse(sqrt(C1/(2*R*Cm))< 1, sqrt(C1/(2*R*Cm)), 1)
-  Opt_L <-  Budget/(C1 + R*Opt_Alpha*Cm) #transect length in m
+  D <- E/(2*mu)
+  C1 <- E*Cw
+  Opt_Alpha <-  ifelse(sqrt(C1/(2*E*Cm))< 1, sqrt(C1/(2*E*Cm)), 1)
+  Opt_L <-  Budget/(C1 + E*Opt_Alpha*Cm) #transect length in m
   optArea <- Opt_L*2*w # in sq m
-  fullLength <- Budget/(C1 + (R*Cm)) # in m
+  fullLength <- Budget/(C1 + (E*Cm)) # in m
   fullArea  <-  fullLength*2*w  #in sq m
   Rc <- Cm/Cw  
   
   #how many encounters expected 
   expNfull <- (mu/w)*(D*fullArea) 
   sampSizeFull <- if(expNfull>80) TRUE
-  else if(expNfull>60) "POSS"
+  else if(expNfull>60) "BDRLN"
   else FALSE
   expNopt <- (mu/w)*(D*optArea)
   measuredNopt <- expNopt*Opt_Alpha
   sampSizeOpt <- if(expNopt*Opt_Alpha>80) TRUE
-  else if(expNopt*Opt_Alpha>60) "POSS"
+  else if(expNopt*Opt_Alpha>60) "BDRLN"
   else FALSE
   
-  optCalcR <- data.frame(w = w, mu = mu, D = D, C1 = C1, Rc = Rc, 
+  optCalcE <- data.frame(w = w, mu = mu, D = D, C1 = C1, Rc = Rc, 
                          Opt_Alpha = Opt_Alpha, Opt_L = Opt_L, optArea = optArea, 
                          fullLength = fullLength, fullArea = fullArea, 
                          expNfull = expNfull, sampSizeFull = sampSizeFull, 
@@ -69,20 +86,20 @@ dsOptACalcR <- function(R, sigm, Cm, Cw, Budget){
                          sampSizeOpt = sampSizeOpt)
 }
 
-# dsOptCalcD is the same as dsOptCalcR except it takes D as an argument instead of R
+# dsOptCalcD is the same as dsOptCalcE except it takes D as an argument instead of E
 # D = density, targets per m2
 dsOptACalcD <- function(D, sigm, Cm, Cw, Budget){
   w <- 2*sigm
   mu <- sqrt(pi*(sigm^2)/2)
-  R <- 2*mu*D
-  C1 <- R*Cw
-  Opt_Alpha <-  ifelse(sqrt(C1/(2*R*Cm))< 1, sqrt(C1/(2*R*Cm)), 1)
-  Opt_L <-  Budget/(C1 + R*Opt_Alpha*Cm) #transect length in m
+  E <- 2*mu*D
+  C1 <- E*Cw
+  Opt_Alpha <-  ifelse(sqrt(C1/(2*E*Cm))< 1, sqrt(C1/(2*E*Cm)), 1)
+  Opt_L <-  Budget/(C1 + E*Opt_Alpha*Cm) #transect length in m
   optArea <- Opt_L*2*w # in sq m
-  fullLength <- Budget/(C1 + (R*Cm)) # in m
+  fullLength <- Budget/(C1 + (E*Cm)) # in m
   fullArea  <-  fullLength*2*w  #in sq m
   
-  Ct <- Cm*R
+  Ct <- Cm*E
   Rc <- Cm/Cw  
   
   #how many encounters expected 
@@ -120,10 +137,10 @@ OptA <- function(Cm, Cw){
 
 #use CDS effort to convert through budget to optimised sampling effort
 
-CDStoOptEffort <- function(tlengthCDS, Cm, Cw, R){
-  B <- tlengthCDS*R*(Cw+Cm)
+CDStoOptEffort <- function(tlengthCDS, Cm, Cw, E){
+  B <- tlengthCDS*E*(Cw+Cm)
   OptAlph <- sqrt(Cw/(2*Cm))
-  OptLength <-  B/(R*(Cw+OptAlph*Cm))
+  OptLength <-  B/(E*(Cw+OptAlph*Cm))
   return(OptLength)
 }
 
@@ -132,8 +149,8 @@ CDStoOptEffort <- function(tlengthCDS, Cm, Cw, R){
 
 minLopt <- function(dens, sigm, Opt_Alpha, minN = 80){
   mu<-sqrt(pi*(sigm^2)/2)
-  R <- 2*mu*dens
-  minL <- (minN/Opt_Alpha)/R  #length required for minimum detections
+  E <- 2*mu*dens
+  minL <- (minN/Opt_Alpha)/E  #length required for minimum detections
 }
 
 predBen <- function(Rc){

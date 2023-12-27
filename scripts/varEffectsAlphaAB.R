@@ -1,249 +1,314 @@
-#Varying one of the key variables (encounter rates, ratio of detectabilities and cost ratio) keeping all others constant, how does each key variable affect the optimal proportions?
+#Varying one of the key variables (encounter rate ratio, ratio of detectabilities and cost ratio) keeping all others constant, how does each key variable affect the optimal proportions?
 
-#This version of this script = between using separate variables for sp A and B vs ratios. Commented out sections are the separate variables (functions to create dfs) and code below uses separate variables to make graphs.
+library(plotmath)
 
 source("scripts/multiSpOptFuncs.R") # loads functions that calculate thresholds between optimal strategies, and calculate the optimal proportions for the various strategies.
+source("scripts/makeDfFunctions_varEffectsGraphs.R") # loads functions for creating the dataframes that the graphs use.
 source("scripts/caseStudyVars.R") # loads values from Decky's dataset for C. auranticum and C. purpureum
 
 #What goes in?
 #muRat, Erat, Rc
 
 #what comes out?
-#three graphs: how alpha B changes with a) change in detectability ratio, b) change in cost ratio, c) change in encounter rate ratio.
-# same graphs for alphas A and B
+# same graphs for alphas A and B: how alphas A and B changes with change in detectability ratio, change in cost ratio, change in encounter rate ratio. (a and b are one set, just b is another set)
+
 # all graphs need to only show ranges that are within the relevant optimal strategy range
 
 opar <- par()
-dflength <- 100
-#Make dataframes for plots
+dflength  <-  100
+# Graphs ----
 
-# alpha A and alpha B both <1
-  
-makeRcABdf <- function(dflength = 100, Erat, muRat, RcTop){
-  Rc_ABdf <- data.frame("Rc" = numeric(dflength), "alphaA" = numeric(dflength), "alphaB" = numeric(dflength))
-  Rc_ABdf$Rc <- seq(from = oneToTwoAlpha_Rc(Erat = Erat, muRat = muRat), to = RcTop, length.out = dflength)
-  Rc_ABdf$alphaA <- optAB_Rc(Rc = Rc_ABdf$Rc, muRat = muRat, Erat = Erat)[[1]]
-  Rc_ABdf$alphaB <- optAB_Rc(Rc = Rc_ABdf$Rc, muRat = muRat, Erat = Erat)[[2]]
-  
-  return(Rc_ABdf)
-}  
+## Using Decky data ----
 
-makeEratABdf <- function(dflength = 100, Rc, muRat, EratTop){
- Erat_ABdf <- data.frame("Erat" = numeric(dflength), "alphaA" = numeric(dflength), "alphaB" = numeric(dflength))
- EratBottom <- ifelse(oneToTwoAlpha_Erat(Rc = Rc, muRat = muRat)<0.0001, 0.0001, 
-                      oneToTwoAlpha_Erat(Rc = Rc, muRat = muRat))
-  Erat_ABdf$Erat <- seq(from = EratBottom, to = EratTop, length.out = dflength)
-  Erat_ABdf$alphaA <- optAB_Rc(Rc = Rc, muRat = muRat, Erat = Erat_ABdf$Erat)[[1]]
-  Erat_ABdf$alphaB <- optAB_Rc(Rc = Rc, muRat = muRat, Erat = Erat_ABdf$Erat)[[2]]
-  
-  return(Erat_ABdf)
-}
-  
-makeMuRatABdf <- function(dflength = 100, Rc, Erat, muRatTop){
-muRat_ABdf <- data.frame("muRat" = numeric(dflength), "alphaA" = numeric(dflength), "alphaB" = numeric(dflength))
-  muRat_ABdf$muRat <- seq(from = 1, to = muRatTop, length.out = dflength)
-  muRat_ABdf$alphaA <- optAB_Rc(Rc = Rc, Erat = Erat, muRat = muRat_ABdf$muRat)[[1]]
-  muRat_ABdf$alphaB <- optAB_Rc(Rc = Rc, Erat = Erat, muRat = muRat_ABdf$muRat)[[2]]  
-  
-  return(muRat_ABdf)
-}
+### alpha AB <1 ----
+
+# make dataframes:
+
+#case study 1 is varying Rc from the threshold where the optimal strategy goes from alpha A = 1 and alpha B <1 to both alphas <1. Top end of the range is 5* the Rc of the case study.
+
+caseStudy1 <- makeRcABdf(dflength = dflength, 
+                         Erat = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"], 
+                         muRat = caseStudyVals$mu[2]/caseStudyVals$mu[1], 
+                         RcTop = 5)
+
+#case study 2 is varying Encounter rate ratio, from the threshold between strategies to 5* the Erat of the case study.
+
+caseStudy2 <- makeEratABdf(dflength = dflength, 
+                           Rc = caseStudyVals$cm[2]/caseStudyVals$cw[1], 
+                           muRat = caseStudyVals$mu[2]/caseStudyVals$mu[1], 
+                           EratTop = (caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"])*20)
+
+caseStudy3 <- makeDF_AB_XmuR(dflength = dflength, muRto = 1.112,
+                            Rc = caseStudyVals$cm[2]/caseStudyVals$cw[1],
+                            Erat = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"])
+#single sp benefits
+
+# checking benefits: single and multispecies compare
+
+benA <- predBen(Rc=caseStudyVals$cm[1]/caseStudyVals$cw[1])
+
+########
+#This doesn't make sense... The cost ratio is really low, so how is the single species benefit 1.25? 
+
+benB <- predBen(Rc = caseStudyVals$cm[2]/caseStudyVals$cw_EB[2])
+
+benMult <- b3(Rc = caseStudyVals$cm[1]/caseStudyVals$cw[1], ER = caseStudyVals$Erates[2]/caseStudyVals$Erates[1], muR = 1)
+
+# adding benefits to the dataframes
+
+caseStudy1$b3 <- b3(Rc = caseStudy1$Rc, muR = 1, ER = caseStudyVals$Erates[2]/caseStudyVals$Erates[1])
+#generate data for lines with different encounter rates
+# Different E ratio, same mu ratio, looking at change over a range of Rc
+(mySp1_T2 <- oneToTwoAlpha_Rc(Erat = 1, muRat = 1))
+
+mySpecies1 <- makeRcABdf(Erat = 1, muRat = 1, RcTop = 5)
+mySpecies1$b3 <- b3(Rc = mySpecies1$Rc, muR = 1, ER = 1)
+
+mySpecies2 <- makeRcABdf(Erat = 4, muRat = 1, RcTop = 5)
+mySpecies2$b3 <- b3(Rc = mySpecies2$Rc, muR = 1, ER = 4)
+
+mySpecies3 <- makeRcABdf(Erat = 16, muRat = 1, RcTop = 5)
+mySpecies3$b3 <- b3(Rc = mySpecies3$Rc, muR = 1, ER = 16)
+
+#change this one to 100
+(mySp2_T2 <- oneToTwoAlpha_Rc(Erat = 50, muRat = 1))
+mySpecies4 <- makeRcABdf(Erat = 100, muRat = 1, RcTop = 5)
+mySpecies4$b3 <- b3(Rc = mySpecies4$Rc, muR = 1, ER = 100)
+
+# legend labels
+leg1 <- expression(italic(E)[R]==1)
+leg2 <- expression(italic(E)[R]==4)
+leg3 <- expression(italic(E)[R]==16)
+leg4 <- expression(italic(E)[R]==26.6)
+leg5 <- expression(italic(E)[R]==100)
+
+# plot the data
+
+#plot 1: a) alpha a, and b) alpha b as a function of Rc, with multiple lines showing the effect of changing the E ratio
+
+png("graphs/alphaAB_caseStudy_Rc.png", width = 700, height = 500)
+
+layout(matrix(c(1,2,3,3), ncol = 2, byrow = TRUE), heights = c(0.75,0.25))
+par(xpd = TRUE, mar = c(2,4,1,2), cex = 1.3, pty = "s") 
+
+# varying Rc: 
+plot(x = caseStudy1$Rc, y = caseStudy1$alphaA, xlab = "", ylab = "",
+     type = "l", ylim = c(0, 1))
+lines(x = mySpecies1$Rc, y = mySpecies1$alphaA, xlab = "", ylab = "",
+     lty = "dashed", ylim = c(0, 1))
+lines(x = mySpecies2$Rc, y = mySpecies2$alphaA, xlab = "", ylab = "",
+     lty = "dotted", ylim = c(0, 1))
+lines(x = mySpecies3$Rc, y = mySpecies3$alphaA, xlab = "", ylab = "",
+     lty = "longdash", ylim = c(0, 1))
+lines(x = mySpecies4$Rc, y = mySpecies4$alphaA, xlab = "", ylab = "",
+     lty = "dotdash", ylim = c(0, 1))
+points(x = 0.0222, y = 0.90, pch = 4, cex = 1.5)
+
+mtext(text =expression(displaystyle(R)[c]),  side = 1, line = 2.5, at = 2.5)
+mtext(text = expression(paste(alpha[A]^"*")), side = 2, line = 2, at = 0.5, cex = 1.4)
+
+plot(x = caseStudy1$Rc, y = caseStudy1$alphaB, xlab = "", ylab = "",
+     type = "l", ylim = c(0, 1))
+lines(x = mySpecies1$Rc, y = mySpecies1$alphaB, xlab = "", ylab = "",
+     lty = "dashed", ylim = c(0, 1))
+lines(x = mySpecies2$Rc, y = mySpecies2$alphaB, xlab = "", ylab = "",
+     lty = "dotted", ylim = c(0, 1))
+lines(x = mySpecies3$Rc, y = mySpecies3$alphaB, xlab = "", ylab = "",
+     lty = "longdash", ylim = c(0, 1))
+lines(x = mySpecies4$Rc, y = mySpecies4$alphaB, xlab = "", ylab = "",
+     lty = "dotdash", ylim = c(0, 1))
+points(x = 0.0222, y = 0.90, pch = 4, cex = 1.5)
+
+mtext(text =expression(displaystyle(R)[c]),  side = 1, line = 2.5, at = 2.5)
+mtext(text = expression(paste(alpha[B]^"*")), side = 2, line = 2, at = 0.5, cex = 1.4)
+
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+legend(x = "top", xjust = 0, legend = c(leg1, leg2, leg3, leg4, leg5), lty = c("dashed", "dotted", "longdash", "solid", "dotdash"), bty = "n", cex = 1, horiz = TRUE, xpd = TRUE)
+legend(x = "bottom", y = "center", legend = expression(italic(Cestrum)~survey), pch = 4, bty = "n", cex = 1)
+
+dev.off()
+
+#trying to see what happens to the proportions over a range of mu ratio, but with an ER closer to 1.
+
+#checking relevant thresholds:
+
+#Rc where strategies change (one to two opt proportions):
+(oneToTwoAlpha_Rc(muRat = 1, Erat = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"]))
+# at case study muR and Er: 0.01811594
+
+# when Er = 1
+(oneToTwoAlpha_Rc(muRat = 1, Erat = 1)) #0.25
+
+#alpha a and alpha b
+(optAB_Rc(Rc = (caseStudyVals$cm[1]/caseStudyVals$cw[1])*5, Erat = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"], muRat = 1))
+
+# when Er=1
+(optAB_Rc(Rc = (caseStudyVals$cm[1]/caseStudyVals$cw[1])*5, Erat =1, muRat = 1))
+# not optimisable with case study Rc - needs to be at least 0.25
+
+# so, need to show how proportions change with muR for at least one value of Rc: try 0.25 and 0.5
+
+ERtest.25 <- makeDF_AB_XmuR(muRto = 10, Rc = 0.25, Erat = 1)
+ERtest.5 <- makeDF_AB_XmuR(muRto = 10, Rc = 0.5, Erat = 1)
+(sqrt(1/(2*0.5))) #single sp opt prop is 1
+#make dataframes 
+
+#add benefit to caseStudy3
+
+caseStudy3$b3 <- b3(muR = caseStudy3$muRat, ER = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"], Rc = caseStudyVals$cm[2]/caseStudyVals$cw[1])
+
+myMu1 <- makeDF_AB_XmuR(muRto = 2.03, Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*3, Erat = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"])
+myMu1$b3 <- b3(muR = myMu1$muRat, ER = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"], Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*3)
+
+myMu2 <- makeDF_AB_XmuR(muRto = 2.76, Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*5, Erat = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"])
+myMu2$b3 <- b3(muR = myMu2$muRat, ER = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"], Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*5)
+
+myMu3 <- makeDF_AB_XmuR(muRto = 4.64, Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*10, Erat = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"])
+myMu3$b3 <- b3(muR = myMu3$muRat, ER = caseStudyVals$Erates[caseStudyVals$species=="C_auranticum"]/caseStudyVals$Erates[caseStudyVals$species=="C_purpureum"], Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*10)
+
+alphB_muRat <- makeDF_B_XmuR(muRfrom = max(caseStudy3$muRat), muRto = 5, Rc = caseStudyVals$cm[2]/caseStudyVals$cw[1], Erat = caseStudyVals$Erates[2]/caseStudyVals$Erates[1])
+alphB_muRat$b2 <- b2(Rc = caseStudyVals$cm[2]/caseStudyVals$cw[1], ER = caseStudyVals$Erates[2]/caseStudyVals$Erates[1], muR = alphB_muRat$muRat)
+
+alphB_muRat1 <- makeDF_B_XmuR(muRfrom = max(myMu1$muRat), muRto = 5, Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*3, Erat = caseStudyVals$Erates[2]/caseStudyVals$Erates[1])  
+alphB_muRat1$b2 <- b2(Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*3, ER = caseStudyVals$Erates[2]/caseStudyVals$Erates[1], muR = alphB_muRat1$muRat)
+
+alphB_muRat2 <- makeDF_B_XmuR(muRfrom = max(myMu2$muRat), muRto = 5, Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*5, Erat = caseStudyVals$Erates[2]/caseStudyVals$Erates[1])  
+alphB_muRat2$b2 <- b2(Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*5, ER = caseStudyVals$Erates[2]/caseStudyVals$Erates[1], muR = alphB_muRat2$muRat)
+
+alphB_muRat3 <- makeDF_B_XmuR(muRfrom = max(myMu3$muRat), muRto = 5, Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*10, Erat = caseStudyVals$Erates[2]/caseStudyVals$Erates[1])
+alphB_muRat3$b2 <- b2(Rc = (caseStudyVals$cm[2]/caseStudyVals$cw[1])*10, ER = caseStudyVals$Erates[2]/caseStudyVals$Erates[1], muR = alphB_muRat3$muRat)
 
 
-# alpha A = 1, alpha B<1
+rc1 <- expression(italic(R)[c]==0.022)
+rc2 <- expression(italic(R)[c]==0.066)
+rc3 <- expression(italic(R)[c]==0.11)
+rc4 <- expression(italic(R)[c]==0.22)
 
-#effect of changing Rc
+png("graphs/alphAB_caseStudy_muR.png", width = 700, height = 550)
+layout(matrix(c(1,2,3,3), ncol = 2, byrow = TRUE), heights = c(0.75,0.25))
+par(xpd = TRUE, mar = c(2,4,1,2), cex = 1.3, pty = "s") 
+# varying mu ratio:
 
-makeRc_Bdf <- function(dflength = 100, muRat, Erat){
-  alphB_Rc <- data.frame("Rc" = numeric(dflength),
-                         "alphaB" = numeric(dflength))
-  alphB_Rc$Rc <- seq(from = alphBToLTS_Rc(Erat = Erat, muRat = muRat), 
-                     to = oneToTwoAlpha_Rc(Erat = Erat, muRat = muRat), 
-                     length.out = dflength)
-  alphB_Rc$alphaB <- optB_Rc(alphB_Rc$Rc,muRat,Erat)
-  
-  return(alphB_Rc)
-}
+plot(x = caseStudy3$muRat, y = caseStudy3$alphaA, type = "l", xlab = "", ylab = "", ylim = c(0, 1), xlim = c(1,5))
+mtext(text = expression(mu[R]), side = 1, line = 2.5, at = 3, cex = 1.4)
+mtext(text = expression(paste(alpha[A]^"*")), side = 2, line = 2.2, cex = 1.4)
 
-test <- makeRc_Bdf(dflength = dflength, muRat = 2, Erat = Erat)
+lines(x = myMu1$muRat, y = myMu1$alphaA, xlab = "", ylab = "",
+     ylim = c(0, 1), xlim = c(1,5),
+     lty = "dashed")
+lines(x = myMu2$muRat, y = myMu2$alphaA, xlab = "", ylab = "",
+     ylim = c(0, 1), xlim = c(1,5),
+     lty = "dotted")
+lines(x = myMu3$muRat, y = myMu3$alphaA, xlab = "", ylab = "",
+     ylim = c(0, 1), xlim = c(1,5),
+     lty = "longdash")
+points(x = 1, y = 0.9, pch = 4, cex = 1.3)
 
-makeMuRat_Bdf <- function(dflength = 100, Rc, Erat){
-  #effect of changing muRat
-  alphB_muRat <- data.frame("muRat" = numeric(dflength),
-                            "alphaB" = numeric(dflength))
-  muRatTop <- ifelse(oneToTwoAlpha_muRatSq(Rc = Rc, Erat = Erat)<=1, NA,
-                     oneToTwoAlpha_muRatSq(Rc = Rc, Erat = Erat))
-  if (is.na(muRatTop)){
-    print(paste0("The ratio muB/muA would need to be <1 to fall within the range of this optimal strategy, where alpha A = 1 and alpha B < 1, with the current values of Rc = ", round(Rc, 3), " and E ratio = ", round(Erat, 3), ". This ratio must be > 1 for the expressions used here to apply."))
-  } else {
-    alphB_muRat$muRat <- seq(from = 1, to = sqrt(muRatTop), length.out = dflength)
-  alphB_muRat$alphaB <- optB_Rc(Rc = Rc, Erat = Erat, muRat = alphB_muRat$muRat)
-  return(alphB_muRat)
-    }
-}
-  
-test1 <- makeMuRat_Bdf(Rc = 0.05, Erat = Erat) 
+plot(x = caseStudy3$muRat, y = caseStudy3$alphaB, type = "l", xlab = "", ylab = "", ylim = c(0, 1), xlim = c(1,5))
+mtext(text = expression(mu[R]), side = 1, line = 2.5, at = 3, cex = 1.4)
+mtext(text = expression(paste(alpha[B]^"*")), side = 2, line = 2.2, cex = 1.4)
 
-makeErat_Bdf <- function(dflength = 100, Rc, muRat){
-  #effect of changing Erat
-  alphB_Erat <- data.frame("Erat" = numeric(dflength),
-                           "alphaB" = numeric(dflength))
-  alphB_Erat$Erat <- seq(from = alphBtoLTS_Erat(Rc = Rc, muRat = muRat), 
-                         to = oneToTwoAlpha_Erat(Rc = Rc, muRat = muRat), length.out = dflength)
-  alphB_Erat$alphaB <- optB_Rc(Rc = Rc, muRat = muRat, Erat = alphB_Erat$Erat)
-  
-  return(alphB_Erat)
-}  
+lines(x= myMu1$muRat, y = myMu1$alphaB, lty = "dashed", ylim = c(0, 1), xlim = c(1,5), xlab = "", ylab = "")
+lines(x= myMu2$muRat, y = myMu2$alphaB, lty = "dotted", ylim = c(0, 1), xlim = c(1,5), xlab = "", ylab = "")
+lines(x= myMu3$muRat, y = myMu3$alphaB, lty = "longdash", ylim = c(0, 1), xlim = c(1,5), xlab = "", ylab = "")
 
-test2 <- makeErat_Bdf(dflength = dflength, Rc = Rc_calc, muRat = muRat)
+lines(x = alphB_muRat$muRat, y = alphB_muRat$alphaB, 
+      xlab = "", ylab = "",  ylim = c(0, 1), xlim = c(1,5), lty = "solid", col = "grey")
+lines(x = alphB_muRat1$muRat, y = alphB_muRat1$alphaB, 
+     xlab = "", ylab = "",  ylim = c(0, 1), xlim = c(1,5), lty = "dashed", col = "grey")
+lines(x = alphB_muRat2$muRat, y = alphB_muRat2$alphaB, 
+     xlab = "", ylab = "",  ylim = c(0, 1), xlim = c(1,5),, lty = "dotted", col = "grey")
+lines(x = alphB_muRat3$muRat, y = alphB_muRat3$alphaB, 
+     xlab = "", ylab = "",  ylim = c(0, 1), xlim = c(1,5),, lty = "longdash", col = "grey")
+points(x = 1, y = 0.9, pch = 4, cex = 1.3)
 
-#it looks like the function to make the dataframes works fine, but very few of the rows actually result in an alpha B opt scenario. Need to think through how to narrow down the range of the variables so that the graphs are useful.
-
-# changing the ratio of detectabilities
-# ABdata <- data.frame("muA" = seq(from_muA, muB, length.out = dflength), "muB" = muB, "alphaA" = numeric(dflength), "alphaB" = numeric(dflength))
-# ABdata$ratio <- ABdata$muA/ABdata$muB
-# ABdata$alphaA <- ifelse(new_optAB(muA = ABdata$muA, muB = muB, Ea = Ea, Eb = Eb, C = C)[[1]]<=1, 
-#                         new_optAB(muA = ABdata$muA, muB = muB, Ea = Ea, Eb = Eb, C = C)[[1]], 1)
-# ABdata$alphaB <- new_optAB(muA = ABdata$muA, muB = muB, Ea = Ea, Eb = Eb, C = C)[[2]]
-# 
-# # changing cost ratio
-# costRat <- data.frame("C" = seq(range_C[1], range_C[2], length.out = dflength), "alphaA" = numeric(dflength), "alphaB" = numeric(20))
-# costRat$alphaA <- new_optAB(muA = muA, muB = muB, Ea = Ea, Eb = Eb, C = costRat$C)[[1]]
-# costRat$alphaB <- new_optAB(muA = muA, muB = muB, Ea = Ea, Eb = Eb, C = costRat$C)[[2]]
-#   
-# #changing encounter rate of species A (the rare one/less detectable)
-# AB_A_data <- data.frame("EA" = seq(range_Ea[1], range_Ea[2], length.out = dflength), "alphaA" = numeric(dflength), "alphaB" = numeric(dflength))
-# AB_A_data$alphaA <- ifelse(new_optAB(muA = muA, muB = muB, Ea = AB_A_data$EA, Eb = Eb, C = C)[[1]]<=1,
-#                            new_optAB(muA = muA, muB = muB, Ea = AB_A_data$EA, Eb = Eb, C = C)[[1]], 1)
-# AB_A_data$alphaB <- ifelse(new_optAB(muA = muA, muB = muB, Ea = AB_A_data$EA, Eb = Eb, C = C)[[2]]<=1,
-#                            new_optAB(muA = muA, muB = muB, Ea = AB_A_data$EA, Eb = Eb, C = C)[[2]], 1)
-# 
-# #changing encounter rate of species B (the abundant one/more detectable)
-# AB_B_data <- data.frame("EB" = seq(range_Eb[1], range_Eb[2], length.out = dflength), "alphaA" = numeric(dflength), "alphaB" = numeric(dflength))
-# AB_B_data$alphaA <- ifelse(new_optAB(muA = muA, muB = muB, Ea = Ea, Eb = AB_B_data$EB, C = C)[[1]]<=1,
-#                            new_optAB(muA = muA, muB = muB, Ea = Ea, Eb = AB_B_data$EB, C = C)[[1]], 1)
-# AB_B_data$alphaB <- ifelse(new_optAB(muA = muA, muB = muB, Ea = Ea, Eb = AB_B_data$EB, C = C)[[2]]<=1,
-#                            new_optAB(muA = muA, muB = muB, Ea = Ea, Eb = AB_B_data$EB, C = C)[[2]], 1)
-# results_dfs <- list(ABdata, costRat, AB_A_data, AB_B_data)
-# }
-
-
-# commented out version of function to make dataframes that uses mu A and B and E A and B separately.
-# make_alphB_df <- function(muA, muB, Ea, Eb, C, from_muA, range_C, range_Ea, range_Eb, dflength){
-#   # changing the ratio of detectabilities
-#   detect <- data.frame("muA" = seq(from_muA, muB, length.out = dflength), "muB"=muB)
-# detect$ratio <- detect$muA/detect$muB
-# detect$alphaB <- ifelse(opt_alpha_B(Ea = Ea, Eb = Eb, muA = detect$muA, muB = detect$muB, C = C)<1,
-#                         opt_alpha_B(Ea = Ea, Eb = Eb, muA = detect$muA, muB = detect$muB, C = C), 1)
-# 
-# #changing the cost ratio
-# costRat <- data.frame("C" = seq(range_C[1], range_C[2], length.out = dflength), "alphaB" = numeric(dflength))
-# costRat$alphaB <- ifelse(opt_alpha_B(Ea=Ea, Eb = Eb, muA = muA, muB = muB, C = costRat$C)<=1, 
-#                          opt_alpha_B(Ea=Ea, Eb = Eb, muA = muA, muB = muB, C = costRat$C), 1)
-# 
-# #changing encounter rate of species A (the rare one)
-# EAdata <- data.frame("EA" = seq(range_Ea[1], range_Ea[2], length.out = dflength), "alphaB" = numeric(dflength))
-# EAdata$alphaB <- opt_alpha_B(Ea = EAdata$EA, Eb = Eb, muA = muA, muB = muB, C=C)
-# 
-# #changing encounter rate of species B (the common one)
-# EBdata <- data.frame("EB" = seq(range_Eb[1], range_Eb[2], length.out = dflength), "alphaB" = numeric(dflength))
-# EBdata$alphaB <- opt_alpha_B(Ea = Ea, Eb = EBdata$EB, muA = muA, muB = muB, C=C)
-# 
-# myDataframes <- list(detect, costRat, EAdata, EBdata)
-# }
-
-# at these values alpha A = 1 for C = 0.5
-muA  <-  1.5; muB <- 3; Ea <- 0.01; Eb <- 0.3
-
-# what C gives alpha A < 1 for these values? 
-# muA  <-  1.5; muB <- 3; Ea <- 0.01; Eb <- 0.3 upper = 0.68; lower = 0.17
-# muA <- 1.2; upper = 0.68; lower = 0.116
-
-upperT_C(EA = Ea, EB = Eb, muA = muA, muB = muB) 
-lowerT_C(EA = Ea, EB = Eb, muA = muA, muB = muB) 
-
-# make dfs for the alpha A = 1 solution
-alphBdfs <- make_alphB_df(muA = 1.5, muB = 3, Ea = 0.01, Eb = 0.3, C = 0.68-((0.68-0.17)/2), from_muA = 0.1, range_C = c(0.17, 0.68), range_Ea = c(0.001, 0.1), range_Eb = c(0.2, 1), dflength = 20)
-
-# opt B
-alphB <- opt_alpha_B(Ea = Ea, Eb = Eb, muA = muA, muB = muB, C = 0.17)
-
-#make dfs for the two alpha solution 
-
-AB_dfs <- make_dfs_alphAB(muA = 1.5, muB = 3, Ea = 0.01, Eb = 0.3, C = 0.17-((0.17-0.01)/2), from_muA = 0.1, range_C = c(0.01, 0.17), range_Ea = c(0.001, 0.1), range_Eb = c(0.2, 1), dflength = 20)
-
-# opt A and B
-alphAB <- new_optAB(muA = muA, muB = muB, Ea = Ea, Eb = Eb, C = 0.17)
-
-C <- round(0.68-((0.68-0.17)/2), 2) #for plotting in alpha B graphs
-C2 <- round(0.17-((0.17-0.01)/2), 2) #for plotting in alpha AB graphs
-
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+legend(x = "top", legend = c(rc1, rc2, rc3, rc4), lty = c("solid", "dashed", "dotted", "longdash"), bty = "n", horiz = TRUE, cex = 1, inset = -0.15)
+legend("center", legend = c("Strategy 1", "Strategy 2", expression(italic(Cestrum)~survey)), pch = c(16, 16, 4), col = c("grey", "black", "black"), bty = "n", cex = 1, horiz = TRUE)
+dev.off()
 
 par(opar)
-#png("graphs/bivar_alphaB.png", width = 700, height = 700)
-par(mfrow = c(2,2), cex = 1.2)
+png("graphs/benefit_caseStudy_Rc.png", height = 550)
 
-#Panel 1: how alpha B changes with change in ratio muA/muB
+par(xpd = TRUE, mar = c(8,4,1,2), cex = 1.3, pty = "s") 
 
-plot(x = alphBdfs[[1]]$ratio, y = alphBdfs[[1]]$alphaB, 
-     xlab = "ratio muA/muB", ylab = "alpha B *", 
-     ylim = c(0,1),
-     type = "l", main = paste0("EA = ", round(Ea, 2), "; EB = ", round(Eb, 2), "; C = ", C))
+plot(x = caseStudy1$Rc, y = caseStudy1$b3, type = "l", xlim = c(0,5), ylim = c(1, 2.7), xlab = "", ylab = "")
+
+mtext(text = expression(italic(b)[multisp.]~(scriptstyle(italic(var)(italic(D)[LTS])/italic(var)(italic(D)[opt])))), side = 2, line = 2.2, cex = 1.5)
+mtext(text = expression(italic(R)[c]), side = 1, line = 2.3, cex = 1.5)
+
+lines(x = mySpecies1$Rc, y = mySpecies1$b3, xlab = "", ylab = "",
+     lty = "dashed", ylim = c(1, 2.7))
+lines(x = mySpecies2$Rc, y = mySpecies2$b3, xlab = "", ylab = "",
+     lty = "dotted", ylim = c(1, 2.7))
+lines(x = mySpecies3$Rc, y = mySpecies3$b3, xlab = "", ylab = "",
+     lty = "longdash", ylim = c(1, 2.7))
+lines(x = mySpecies4$Rc, y = mySpecies4$b3, xlab = "", ylab = "",
+     lty = "dotdash", ylim = c(1, 2.7))
+points(x = 0.0222, y = 1.002, pch = 4, cex = 1.5)
+
+legend(x = -1.2, y = 0.5, legend = c(leg1, leg2, leg3,leg4, leg5), lty = c("dashed", "dotted", "longdash","solid", "dotdash"), bty = "n", cex = 1, horiz = TRUE, seg.len = 1.5)
+
+legend(x = 0.2, y = 0.3, legend = c(leg5), lty = "dotdash", bty = "n", cex = 1, horiz = TRUE, seg.len = 1.5)
+
+legend(x = 2.2, y = 0.3, legend = c(expression(italic(Cestrum)~survey)), pch = c(4), bty = "n", cex = 1)
+
+dev.off()
+
+png("graphs/benefit_caseStudy_muR.png", height = 550)
+
+par(xpd = TRUE, mar = c(8,4,1,2), cex = 1.3, pty = "s") 
+
+plot(x = caseStudy3$muRat, y = caseStudy3$b3, type = "l", xlim = c(1,5), ylim = c(1, 1.8), xlab = "", ylab = "")
+
+mtext(text = expression(italic(b)[multisp.]~(scriptstyle(italic(var)(italic(D)[LTS])/italic(var)(italic(D)[opt])))), side = 2, line = 2.2, cex = 1.5)
+mtext(text = expression(mu[R]), side = 1, line = 2.3, cex = 1.5)
+
+lines(x = myMu1$muRat, y = myMu1$b3, xlab = "", ylab = "",
+     lty = "dashed", ylim = c(1, 4.1), xlim = c(1,5), lwd = 1.5)
+lines(x = myMu2$muRat, y = myMu2$b3, xlab = "", ylab = "",
+     lty = "dotted", ylim = c(1, 4.1), xlim = c(1,5), lwd = 1.5)
+lines(x = myMu3$muRat, y = myMu3$b3, xlab = "", ylab = "",
+     lty = "longdash", ylim = c(1, 4.1), xlim = c(1,5), lwd = 1.5)
+points(x = 1, y = 1.002, pch = 4, cex = 1.5)
+lines(x = alphB_muRat$muRat, y = alphB_muRat$b2, 
+      xlab = "", ylab = "", ylim = c(1, 4.1), xlim = c(1,5), lty = "solid", col = "grey", lwd = 1.5)
+lines(x = alphB_muRat1$muRat, y = alphB_muRat1$b2, 
+     xlab = "", ylab = "", ylim = c(1, 4.1), xlim = c(1,5), lty = "dashed", col = "grey", lwd = 1.5)
+lines(x = alphB_muRat2$muRat, y = alphB_muRat2$b2, 
+     xlab = "", ylab = "", ylim = c(1, 4.1), xlim = c(1,5), lty = "dotted", col = "grey", lwd = 1.5)
+lines(x = alphB_muRat3$muRat, y = alphB_muRat3$b2, 
+     xlab = "", ylab = "", ylim = c(1, 4.1), xlim = c(1,5), lty = "longdash", col = "grey", lwd = 1.5)
 
 
-#Panel 2: how alpha B changes with change in the cost ratio
-plot(x = alphBdfs[[2]]$C, y = alphBdfs[[2]]$alphaB, 
-     xlab = "cost ratio Cl/Cm", ylab = "alpha B *", 
-     ylim = c(0,1),
-     type = "l", main = paste0("EA = ", round(Ea, 2), "; EB = ", round(Eb, 2), "; muA/muB = ", round(muA/muB, 2)))
-abline(h = alphB, col = "red", xpd = FALSE)
+legend(x = -0.1, y = 0.78, legend = c(rc1, rc2, rc3, rc4), lty = c("solid", "dashed", "dotted", "longdash"),bty = "n", cex = 1, horiz = TRUE, seg.len = 1.2)
+
+legend(x = 0.15, y = 0.69, legend = c("Strategy 1", "Strategy 2", expression(italic(Cestrum)~survey)), pch = c(16, 16, 4), col = c("grey", "black", "black"), bty = "n", cex = 1, horiz = TRUE)
+
+dev.off()
+
+## Same except for encounter rates ---- 
+
+png("graphs/alphAB_ER1_muR.png", width = 700, height = 550)
+layout(matrix(c(1,2, 3, 3), ncol = 2, byrow = TRUE), heights = c(0.75,0.25))
+par(xpd = TRUE, mar = c(2,4,1,2), cex = 1.3, pty = "s") 
+# varying mu ratio:
+
+plot(x = ERtest.5$muRat, y = ERtest.5$alphaA, type = "l", , lty = "dashed", xlab = "", ylab = "", ylim = c(0, 1), xlim = c(1,10))
+lines(x= ERtest.25$muRat, y = ERtest.25$alphaA, lty = "solid", ylim = c(0, 1), xlim = c(1,5), xlab = "", ylab = "")
+mtext(text = "mu ratio (muB/muA)", side = 1, line = 2, at = 5, cex = 1.2)
+mtext(text = "alpha A *", side = 2, line = 2.2, cex = 1.2)
+#single species with same Rc
 
 
-#Panel 3: how alpha B changes with change in encounter rate of species A
-plot(x = alphBdfs[[3]]$EA, y = alphBdfs[[3]]$alphaB, 
-     xlab = "encounter rate species A (less detectable)", ylab = "alpha B *",
-     ylim = c(0,1),
-     type = "l", main = paste0("EB = ", round(Eb, 2), "; muA/muB = ", round(muA/muB, 2), "; C = ", C))
+plot(x = ERtest.25$muRat, y = ERtest.25$alphaB, type = "l", xlab = "", ylab = "", ylim = c(0, 1), xlim = c(1,10))
+mtext(text = "mu ratio (muB/muA)", side = 1, line = 2, at = 5, cex = 1.2)
+mtext(text = "alpha B *", side = 2, line = 2.2, cex = 1.2)
+lines(x= ERtest.5$muRat, y = ERtest.5$alphaB, lty = "dashed", ylim = c(0, 1), xlim = c(1,5), xlab = "", ylab = "")
 
-#Panel 4: how alpha B changes with change in encounter rate of species B
-plot(x = alphBdfs[[4]]$EB, y = alphBdfs[[4]]$alphaB, 
-     xlab = "encounter rate species B (more detectable)", ylab = "alpha B *",
-     ylim = c(0,1),
-     type = "l", main = paste0("EA = ", round(Ea, 2), "; muA/muB = ", round(muA/muB, 2), "; C = ", C))
-#dev.off()
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+legend(x = "top", legend = c("Rc = 0.25", "Rc = 0.5"), lty = c("solid", "dashed"), bty = "n", horiz = TRUE, cex = 0.8)
 
-#page 1: varying ratio of detectabilities and cost ratio
-#png("graphs/bivar_alphaAB_muAndC.png", width = 700, height = 700)
-par(mfrow = c(2,2), xpd = TRUE, mar = c(3.5,4,4,2), cex = 1.3) 
-plot(x = AB_dfs[[1]]$ratio, y = AB_dfs[[1]]$alphaA, xlab = "", ylab = "alpha A *",
-     type = "l", ylim = c(0, 1))
-mtext(text = "ratio muA/muB", side = 1, line = 1.8, at = 0.5, cex = 1.3)
-plot(x = AB_dfs[[1]]$ratio, y = AB_dfs[[1]]$alphaB, xlab = "", ylab = "alpha B *",
-     type = "l", ylim = c(0, 1))
-mtext(text = "ratio muA/muB", side = 1, line = 1.8, at = 0.5, cex = 1.3)
-mtext(text = paste0("fixed encounter rates and cost ratio\nspA - E=", round(Ea, 2), ", spB - E=", round(Eb,2),"; cost ratio = ", C2), side = 3, line = 1, at = -0.25, cex = 1.3)
-plot(x = AB_dfs[[2]]$C, y = AB_dfs[[2]]$alphaA, xlab = "", ylab = "alpha A *",
-     ylim = c(0, 1),
-     type = "l")
-mtext(text = "cost ratio cl/cm", side = 1, line = 1.8, at = C2, cex = 1.3)
-plot(x = AB_dfs[[2]]$C, y = AB_dfs[[2]]$alphaB, xlab = "", ylab = "alpha B *",
-     ylim = c(0, 1),
-     type = "l")
-abline(h = alphAB[[2]], col = "red", xpd = FALSE)
-mtext(text = "cost ratio cl/cm", side = 1, line = 1.8, at = C2, cex = 1.3)
-mtext(text = paste0("fixed encounter rates and ratio of detectabilities\nspA - E=", round(Ea, 2), ", spB - E=", round(Eb,2), "; muA/muB = ", round(muA/muB, 2)), side = 3, line = 1, at = -0.03, cex = 1.3)
-#dev.off()
+dev.off()
 
-#page 2: varying encounter rates of sp A and B
-#png("graphs/bivar_alphaAB_E.png", width = 700, height = 700)
-par(mfrow = c(2,2), xpd = TRUE, mar = c(3.5,4,4,2), cex = 1.2) 
-plot(x = AB_dfs[[3]]$EA, y = AB_dfs[[3]]$alphaA, type = "l", xlab = "", ylab = "alpha A *", ylim = c(0, 1))
-mtext(text = "encounter rate species A (less detectable)", side = 1, line = 2.1, at = 0.05, cex = 1.2)
-plot(x = AB_dfs[[3]]$EA, y = AB_dfs[[3]]$alphaB, type = "l", xlab = "", ylab = "alpha B *", ylim = c(0, 1))
-mtext(text = "encounter rate species A (less detectable)", side = 1, line = 2.1, at = 0.05, cex = 1.2)
-mtext(text = paste0("fixed encounter rate spB, cost ratio and ratio of detectabilities\nspB - E=", round(Ea,2), "; muA/muB = ", round(muA/muB, 2), "; C = ", C2), side = 3, line = 1, at = -0.025, cex = 1.2)
-plot(x = AB_dfs[[4]]$EB, y = AB_dfs[[4]]$alphaA, type = "l", xlab = "", ylab = "alpha A *", ylim = c(0, 1))
-mtext(text = "encounter rate species B (more detectable)", side = 1, line = 2.1, at = 0.6, cex = 1.2)
-plot(x = AB_dfs[[4]]$EB, y = AB_dfs[[4]]$alphaB, type = "l", xlab = "", ylab = "alpha B *", ylim = c(0, 1))
-mtext(text = "encounter rate species B (more detectable)", side = 1, line = 2.1, at = 0.6, cex = 1.2)
-mtext(text = paste0("fixed encounter rate spA, cost ratio and ratio of detectabilities\nspA - E=", round(Eb,2), "; muA/muB = ", round(muA/muB, 2), "; C = ", C2), side = 3, line = 1, at = 0.03, cex = 1.2)
-#dev.off()
+
