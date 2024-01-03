@@ -5,6 +5,9 @@
 # %    \item Cw : The estimated smallest value is 30 seconds, the estimated largest value is 80 seconds. The estimated average value (Cw) is 45 seconds
 # %\end{itemize}
 
+#requires 
+source("scripts/multiSpOptFuncs.R")
+
 # Data ----
 decky <- read.csv("dataRaw/distance_Kath_2018_DataDecky.csv")
 # Only at a single site: CBG
