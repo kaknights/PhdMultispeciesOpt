@@ -90,7 +90,7 @@ lines(x = graph1_Rc4$logER, y = graph1_Rc4$alphaA, xlab = "", ylab = "",
      lty = "longdash", ylim = c(0, 1))
 lines(x = graph1_Rc5$logER, y = graph1_Rc5$alphaA, xlab = "", ylab = "",
      lty = "solid", ylim = c(0, 1))
-points(x = log(26.6), y = 0.90, pch = 4, cex = 1.5)
+points(x = log(26.6), y = 0.90, pch = 4, cex = 2)
 
 mtext(text =expression(log(italic(E)[R])),  side = 1, line = 2.8, at = 2.3, cex = 1.6)
 mtext(text = expression(paste(alpha[A],"*"~"&")), side = 2, line = 2.5, at = 0.5, cex = 1.6, las = 2)
@@ -141,7 +141,7 @@ lines(x = mySpecies3$Rc, y = mySpecies3$alphaA, xlab = "", ylab = "",
      lty = "dotdash", ylim = c(0, 1))
 lines(x = mySpecies4$Rc, y = mySpecies4$alphaA, xlab = "", ylab = "",
      lty = "solid", ylim = c(0, 1))
-points(x = 0.0222, y = 0.90, pch = 4, cex = 1.5)
+points(x = 0.0222, y = 0.90, pch = 4, cex = 2.5)
 
 mtext(text =expression(italic(R)[cA]),  side = 1, line = 2.5, at = 2.5, cex = 1.6)
 mtext(text = expression(paste(alpha[A],"*"~"&")), side = 2, line = 2.5, at = 0.5, cex = 1.6, las = 2)
@@ -381,28 +381,135 @@ legend(x = 0.15, y = 0.69, legend = c("Strategy 1", "Strategy 2", expression(ita
 
 dev.off()
 
-## Same except for encounter rates 
+# graph 5 ----
+# putting 3 and 4 on the same graph
 
-# png("graphs/alphAB_ER1_muR.png", width = 700, height = 550)
-# layout(matrix(c(1,2, 3, 3), ncol = 2, byrow = TRUE), heights = c(0.75,0.25))
-# par(xpd = TRUE, mar = c(2,4,1,2), cex = 1.3, pty = "s") 
-# # varying mu ratio:
-# 
-# plot(x = ERtest.5$muRat, y = ERtest.5$alphaA, type = "l", , lty = "dashed", xlab = "", ylab = "", ylim = c(0, 1), xlim = c(1,10))
-# lines(x= ERtest.25$muRat, y = ERtest.25$alphaA, lty = "solid", ylim = c(0, 1), xlim = c(1,5), xlab = "", ylab = "")
-# mtext(text = "mu ratio (muB/muA)", side = 1, line = 2, at = 5, cex = 1.2)
-# mtext(text = "alpha A *", side = 2, line = 2.2, cex = 1.2)
-# #single species with same Rc
-# 
-# 
-# plot(x = ERtest.25$muRat, y = ERtest.25$alphaB, type = "l", xlab = "", ylab = "", ylim = c(0, 1), xlim = c(1,10))
-# mtext(text = "mu ratio (muB/muA)", side = 1, line = 2, at = 5, cex = 1.2)
-# mtext(text = "alpha B *", side = 2, line = 2.2, cex = 1.2)
-# lines(x= ERtest.5$muRat, y = ERtest.5$alphaB, lty = "dashed", ylim = c(0, 1), xlim = c(1,5), xlab = "", ylab = "")
-# 
-# plot(1, type = "n", axes=FALSE, xlab="", ylab="")
-# legend(x = "top", legend = c("Rc = 0.25", "Rc = 0.5"), lty = c("solid", "dashed"), bty = "n", horiz = TRUE, cex = 0.8)
-# 
-# dev.off()
+png("graphs/benefit_caseStudy2.png", width = 700, height = 550)
+layout(matrix(c(1,2,3,4), ncol = 2, byrow = TRUE), heights = c(0.75,0.25))
+par(mar = c(2.5,4,1,1), cex = 1.3, pty = "s") 
+
+plot(x = caseStudy1$Rc, y = caseStudy1$b3, type = "l", xlim = c(0,5), ylim = c(1, 2.7), xlab = "", ylab = "", lty = "longdash")
+
+mtext(text = expression(italic(b)[multisp.]~(scriptstyle(italic(var)(italic(D)[LTS])/italic(var)(italic(D)[opt])))), side = 2, line = 2.2, cex = 1.5)
+mtext(text = expression(italic(R)[cA]), side = 1, line = 2.3, cex = 1.5)
+
+lines(x = mySpecies1$Rc, y = mySpecies1$b3, xlab = "", ylab = "",
+     lty = "dashed", ylim = c(1, 2.7), col = "darkgrey")
+lines(x = mySpecies2$Rc, y = mySpecies2$b3, xlab = "", ylab = "",
+     lty = "dotted", ylim = c(1, 2.7))
+lines(x = mySpecies3$Rc, y = mySpecies3$b3, xlab = "", ylab = "",
+     lty = "dotdash", ylim = c(1, 2.7))
+lines(x = mySpecies4$Rc, y = mySpecies4$b3, xlab = "", ylab = "",
+     lty = "solid", ylim = c(1, 2.7))
+points(x = 0.0222, y = 1.002, pch = 4, cex = 2.5)
 
 
+plot(x = caseStudy3$muRat, y = caseStudy3$b3, type = "l", xlim = c(1,5), ylim = c(1, 1.8), xlab = "", ylab = "")
+
+mtext(text = expression(italic(b)[multisp.]~(scriptstyle(italic(var)(italic(D)[LTS])/italic(var)(italic(D)[opt])))), side = 2, line = 2.2, cex = 1.5)
+mtext(text = expression(mu[R]), side = 1, line = 2.3, cex = 1.5)
+
+lines(x = myMu1$muRat, y = myMu1$b3, xlab = "", ylab = "",
+     lty = "longdash", ylim = c(1, 4.1), xlim = c(1,5), lwd = 1.5)
+lines(x = myMu2$muRat, y = myMu2$b3, xlab = "", ylab = "",
+     lty = "dotdash", ylim = c(1, 4.1), xlim = c(1,5), lwd = 1.5)
+lines(x = myMu3$muRat, y = myMu3$b3, xlab = "", ylab = "",
+     lty = "dotted", ylim = c(1, 4.1), xlim = c(1,5), lwd = 1.5)
+points(x = 1, y = 1.002, pch = 4, cex = 2.5)
+
+lines(x = alphB_muRat$muRat, y = alphB_muRat$b2, 
+      xlab = "", ylab = "", ylim = c(1, 4.1), xlim = c(1,5), lty = "solid", col = "grey", lwd = 1.5)
+lines(x = alphB_muRat1$muRat, y = alphB_muRat1$b2, 
+     xlab = "", ylab = "", ylim = c(1, 4.1), xlim = c(1,5), lty = "longdash", col = "grey", lwd = 1.5)
+lines(x = alphB_muRat2$muRat, y = alphB_muRat2$b2, 
+     xlab = "", ylab = "", ylim = c(1, 4.1), xlim = c(1,5), lty = "dotdash", col = "grey", lwd = 1.5)
+lines(x = alphB_muRat3$muRat, y = alphB_muRat3$b2, 
+     xlab = "", ylab = "", ylim = c(1, 4.1), xlim = c(1,5), lty = "dotted", col = "grey", lwd = 1.5)
+
+par(mar = c(2.5,1,1,1), cex = 1.3, pty = "s") 
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+legend(x = "top", legend = c(leg1, leg2, leg3), lty = c("dashed", "dotted", "dotdash","longdash"), col = c("darkgrey", "black","black"),bty = "n", horiz = TRUE, cex = 0.95, inset = -0.15, xpd = TRUE)
+
+legend("center", legend = c(leg4, leg5), lty = c("longdash", "solid"), bty = "n", cex = 0.95, horiz = TRUE, xpd = TRUE)
+
+legend("bottom", legend = c(expression(italic(Cestrum)~survey)), pch = c(4), bty = "n", cex = 0.95, inset = -0.15, xpd = TRUE)
+
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+legend(x = "top", legend = c(rc1, rc2), lty = c("solid", "longdash"), bty = "n", horiz = TRUE, cex = 0.95, inset = -0.15, xpd = TRUE)
+
+legend("center", legend = c(rc3, rc4), lty = c("dotdash", "dotted"), bty = "n", cex = 0.95, horiz = TRUE, xpd = TRUE)
+
+legend("bottom", legend = c("Strategy 1", "Strategy 2"), pch = c(16, 16), col = c("grey", "black"), bty = "n", cex = 0.95, horiz = TRUE, inset = -0.15, xpd = TRUE)
+
+legend("bottom", legend = c(expression(italic(Cestrum)~survey)), pch = 4, col = "black", bty = "n", cex = 0.95, horiz = TRUE, inset = -0.6, xpd = TRUE)
+
+
+dev.off()
+
+# Graph 6 ----
+# Putting the two versions of graph 1 on the same png file
+
+png("graphs/alphaAB_caseStudyPanel.png", width = 700, height = 550)
+
+
+layout(matrix(c(1,2,3,4), ncol = 2, byrow = TRUE), heights = c(0.75,0.25))
+par(mar = c(2,5,1,1), cex = 1.3, pty = "s") 
+
+# alpha a and b against Rc with different lines for ER
+plot(x = caseStudy1$Rc, y = caseStudy1$alphaA, xlab = "", ylab = "",
+     type = "l", ylim = c(0, 1), lty = "longdash")
+lines(x = mySpecies1$Rc, y = mySpecies1$alphaA, xlab = "", ylab = "",
+     lty = "dashed", ylim = c(0, 1), col = "darkgrey")
+lines(x = mySpecies2$Rc, y = mySpecies2$alphaA, xlab = "", ylab = "",
+     lty = "dotted", ylim = c(0, 1))
+lines(x = mySpecies3$Rc, y = mySpecies3$alphaA, xlab = "", ylab = "",
+     lty = "dotdash", ylim = c(0, 1))
+lines(x = mySpecies4$Rc, y = mySpecies4$alphaA, xlab = "", ylab = "",
+     lty = "solid", ylim = c(0, 1))
+points(x = 0.0222, y = 0.90, pch = 4, cex = 2.5)
+
+mtext(text =expression(italic(R)[cA]),  side = 1, line = 2.5, at = 2.5, cex = 1.6)
+mtext(text = expression(paste(alpha[A],"*"~"&")), side = 2, line = 2.5, at = 0.5, cex = 1.6, las = 2)
+mtext(text = expression(paste(alpha[B],"*")), side = 2, line = 3, at = 0.4, cex = 1.6, las = 2)
+
+# alpha a and b against log ER with different lines for Rc
+
+plot(x = caseStudy2$logER, y = caseStudy2$alphaA, xlab = "", ylab = "",
+     type = "l", ylim = c(0, 1), xlim = c(0,4.65), xaxp = c(0,4.5,9), lty = "longdash", col = "darkgrey")
+lines(x = graph1_Rc1$logER, y = graph1_Rc1$alphaA, xlab = "", ylab = "",
+     lty = "dashed", ylim = c(0, 1), col = "lightgrey")
+lines(x = graph1_Rc2$logER, y = graph1_Rc2$alphaA, xlab = "", ylab = "",
+     lty = "dotted", ylim = c(0, 1))
+lines(x = graph1_Rc3$logER, y = graph1_Rc3$alphaA, xlab = "", ylab = "",
+     lty = "dotdash", ylim = c(0, 1))
+lines(x = graph1_Rc4$logER, y = graph1_Rc4$alphaA, xlab = "", ylab = "",
+     lty = "longdash", ylim = c(0, 1))
+lines(x = graph1_Rc5$logER, y = graph1_Rc5$alphaA, xlab = "", ylab = "",
+     lty = "solid", ylim = c(0, 1))
+points(x = log(26.6), y = 0.90, pch = 4, cex = 2)
+
+mtext(text =expression(log(italic(E)[R])),  side = 1, line = 2.8, at = 2.3, cex = 1.6)
+mtext(text = expression(paste(alpha[A],"*"~"&")), side = 2, line = 2.5, at = 0.5, cex = 1.6, las = 2)
+mtext(text = expression(paste(alpha[B],"*")), side = 2, line = 3, at = 0.4, cex = 1.6, las = 2)
+
+# legend panels
+
+par(mar = c(2,1,1,1), cex = 1.3, pty = "s") 
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+
+legend(x = "top", legend = c(leg1, leg2, leg3), lty = c("dashed", "dotted", "dotdash","longdash"), col = c("darkgrey", "black","black"),bty = "n", horiz = TRUE, cex = 0.90, inset = -0.15, xpd = TRUE)
+
+legend("center", legend = c(leg4, leg5), lty = c("longdash", "solid"), bty = "n", cex = 0.90, horiz = TRUE, xpd = TRUE)
+
+legend("bottom", legend = c(expression(italic(Cestrum)~survey)), pch = c(4), bty = "n", cex = 0.95, inset = -0.15, xpd = TRUE)
+
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+
+legend(x = "top", legend = c(gr1leg1, gr1leg2, gr1leg3), lty = c("dashed", "longdash", "dotted"), col = c("lightgrey", "darkgrey", "black"), bty = "n", horiz = TRUE, cex = 0.90, inset = -0.15, xpd = TRUE)
+
+legend("center", legend = c(gr1leg4, gr1leg5, gr1leg6), lty = c("dotdash", "longdash", "solid"), col = c("black", "black", "black"), bty = "n", cex = 0.90, horiz = TRUE, xpd = TRUE)
+
+legend("bottom", legend = c(expression(italic(Cestrum)~survey)), pch = 4, col = "black", bty = "n", cex = 0.95, horiz = TRUE, inset = -0.15, xpd = TRUE)
+
+
+dev.off()
